@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+</Project>
