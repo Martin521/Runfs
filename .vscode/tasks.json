@@ -11,7 +11,7 @@
 				"isDefault": true
 			},
 			"label": "Build: solution",
-			"detail": "Build the runfs.sln solution using dotnet build"
+			"detail": "Build the Runfs.sln solution using dotnet build"
 		}
 	]
 }

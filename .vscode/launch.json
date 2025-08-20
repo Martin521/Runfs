@@ -8,11 +8,12 @@
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
             "request": "launch",
-            "program": "${workspaceFolder}/artifacts/bin/fsx/debug/fsx.dll",
-            "args": ["test1.fsx"],
+            "program": "${workspaceFolder}/artifacts/bin/Runfs/debug/Runfs.dll",
+            "args": ["--verbose", "test1.fs", "arg1", "arg2"],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
-            "console": "internalConsole"
+            "console": "internalConsole",
+            "preLaunchTask": "Build: solution"
         }
 
     ]

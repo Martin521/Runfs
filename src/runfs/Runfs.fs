@@ -33,6 +33,7 @@ let private GetTempPath(entryPointFullPath: string) =
     Path.Join(SystemTempPath, directoryName)
 
 /// TODO
+/// --clean
 /// check build binlog for possible optimization
 /// error handling
 /// package
