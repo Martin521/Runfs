@@ -7,7 +7,8 @@ open System
 
 let args = System.Environment.GetCommandLineArgs() |> Array.toList |> List.tail
 // printfn "hi!"
-printfn $"{args}" 
+printfn $"args: {args}" 
 // Threading.Thread.Sleep 2000
 // printfn "ho."
-// Console.Error.WriteLine "this is error output"
+// Console.Error.WriteLine "this is error output" 
+x

@@ -22,7 +22,7 @@ let private tryParseDirective (lineNumber, line: string) =
             let m = Regex.Match(part1, @"^(?<part1>.+)\.dll$")
             Some(part1, part2)
         else
-            Error lineNumber $"Invalid directive argument {argument}"
+            ParseError lineNumber $"Invalid directive argument {argument}"
             None
 
     let line = line.TrimStart()
@@ -33,10 +33,10 @@ let private tryParseDirective (lineNumber, line: string) =
             let kind = line.[1 .. index - 1]
             let argument = line.[index + 1 ..].Trim()
             if argument.Length = 0 then
-                Error lineNumber "Directive argument is empty"
+                ParseError lineNumber "Directive argument is empty"
                 None
             elif not (argument.StartsWith('"') && argument.EndsWith('"')) then
-                Error lineNumber "Directive argument is not quoted"
+                ParseError lineNumber "Directive argument is not quoted"
                 None
             else
                 let argument = argument.[1 .. argument.Length - 2] // Remove quotes

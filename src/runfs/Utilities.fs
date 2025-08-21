@@ -10,11 +10,11 @@ let longhash (text: string) =
     let hash = SHA256.HashData bytes;
     Convert.ToHexStringLower hash;
 
-let Error lineNumber message =
+let ParseError lineNumber message =
     printfn "Line %d: %s" lineNumber message
 
 let FatalError lineNumber message =
-    Error lineNumber message
+    ParseError lineNumber message
     raise (Exception $"stopped with error")
 
 let runCommand executable (args: string list) workingDirectory =
