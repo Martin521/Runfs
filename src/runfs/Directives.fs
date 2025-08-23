@@ -1,8 +1,7 @@
 module Runfs.Directives
 
-open Runfs.Utilities
 open FsToolkit.ErrorHandling
-open System.Text.RegularExpressions
+open System.Xml
 
 type Directive =
     | Sdk of name: string * version: string option
@@ -13,86 +12,73 @@ type Directive =
     | Property of name: string * value: string
 
 type ParseError =
-    | InvalidDirectiveArgument of int * string
+    | UnknownKind of int * string
+    | MissingArgument of int
+    | ArgumentNotQuoted of int * string
+    | InvalidPropertyName of int * string
+    | MissingPropertyValue of int * string
 
-let tryParseTwoPartArgument regex lineNumber argument =
-    let m = Regex.Match(argument, regex)
-    if m.Success then
-        let part1 = m.Groups.["part1"].Value.Trim()
-        let part2 = 
-            if m.Groups.["part2"].Success then Some(m.Groups.["part2"].Value.Trim())
-            else None
-        Ok(part1, part2)
-    else
-        Error (InvalidDirectiveArgument(lineNumber, argument))
+let private isValidXmlName name =
+    try
+        XmlConvert.VerifyName name |> ignore
+        true
+    with ex -> false
 
-let tryParseArgument regex lineNumber argument =
-    let m = Regex.Match(argument, regex)
-    if m.Success then
-        let part1 = m.Groups.["part1"].Value.Trim()
-        let part2 = 
-            if m.Groups.["part2"].Success then Some(m.Groups.["part2"].Value.Trim())
-            else None
-        Ok(part1, part2)
-    else
-        Error (InvalidDirectiveArgument(lineNumber, argument))
+// TODO: more detailed validity checks (like on path names)
+let private argParsers = Map [
+    "sdk", fun(lineNumber, argument: string) ->
+        let name, version =
+            match argument.IndexOf '@' with
+            | -1 -> argument, None
+            | index -> argument[.. index - 1].Trim(), Some (argument[index + 1 ..].Trim())
+        Ok(Sdk(name, version))
 
-let argParsers = [
-    "r_sdk", tryParseTwoPartArgument """^([^,]+)(,\s*(.+))?\s*$"""
-    "r_package", tryParseTwoPartArgument """^([^,]+)(,\s*(.+))?\s*$"""
-    "r_dll", tryParseArgument """^([^<>:"?\|\*\\]+\.dll)"""
-    "r_source", tryParseArgument """^([^<>:"?\|\*\\]+\.fs)"""
-    "r_project", tryParseArgument """^([^<>:"?\|\*\\]+\...(?:fs|cs))"""
-    "r_property", tryParseArgument ""
+    "package", fun(lineNumber, argument: string) ->
+        let name, version =
+            match argument.IndexOf '@' with
+            | -1 -> argument, None
+            | index -> argument[.. index - 1].Trim(), Some (argument[index + 1 ..].Trim())
+        Ok(Package(name, version))
+    
+    "dll", fun(lineNumber, argument: string) -> Ok(Dll argument)
+    "source", fun(lineNumber, argument: string) -> Ok(Source argument)
+    "project", fun(lineNumber, argument: string) -> Ok(Project argument)
+
+    "property", fun(lineNumber, argument: string) ->
+        match argument.IndexOf '=' with
+        | -1 ->
+            Error(MissingPropertyValue(lineNumber, argument))
+        | index ->
+            let name = argument[.. index - 1].Trim()
+            let value = argument[index + 1 ..].Trim()
+            if isValidXmlName name then
+                Ok(Property(name, value))
+            else
+                Error(InvalidPropertyName(lineNumber, argument))
     ]
 
-let private isDirectiveLine (line: string) =
-    line.StartsWith '#'
-
+let private tryFindRunfsDirective (lineNumber, line: string) =
+    if line.StartsWith "#r_" then Some (lineNumber, line[3..]) else None
 
 let private tryParseDirective (lineNumber, line: string) =
-    let tryParseArgument separator (argument: string) lineNumber =
-        let m = Regex.Match(argument, $"""^(?<part1>[^{separator}]+)({separator}\s*(?<part2>.+))?\s*$""")
-        if m.Success then
-            let part1 = m.Groups.["part1"].Value.Trim()
-            let part2 = 
-                if m.Groups.["part2"].Success then Some(m.Groups.["part2"].Value.Trim())
-                else None
-            Ok(part1, part2)
+    match line.IndexOf(' ') with
+    | -1 -> Error (MissingArgument lineNumber)
+    | index ->
+        let kind = line.[.. index - 1]
+        let argument = line.[index + 1 ..].Trim()
+        if argument.Length = 0 then
+            Error (MissingArgument lineNumber)
+        elif not (argument.StartsWith('"') && argument.EndsWith('"')) then
+            Error (ArgumentNotQuoted(lineNumber, argument))
         else
-            Error (InvalidDirectiveArgument(lineNumber, argument))
-
-    let line = line.TrimStart()
-    if line.StartsWith("#") then
-        match line.IndexOf(' ') with
-        | -1 -> None
-        | index ->
-            let kind = line.[1 .. index - 1]
-            let argument = line.[index + 1 ..].Trim()
-            if argument.Length = 0 then
-                ParseError lineNumber "Directive argument is empty"
-                None
-            elif not (argument.StartsWith('"') && argument.EndsWith('"')) then
-                ParseError lineNumber "Directive argument is not quoted"
-                None
-            else
-                let argument = argument.[1 .. argument.Length - 2] // Remove quotes
-                match kind with
-                | "r_sdk" -> tryParseArgument "," argument lineNumber |> Result.map Sdk |> Some
-                | "r_package" -> tryParseArgument "," argument lineNumber |> Result.map Package |> Some
-                | "r_dll" -> Dll argument |> Ok |> Some
-                | "r_source" -> Source argument |> Ok |> Some
-                | "r_project" -> Project argument |> Ok |> Some
-                | "r_property" ->
-                    tryParseArgument "=" argument lineNumber
-                    |> Result.map (fun (name, value) -> Property(name, Option.defaultValue "" value))
-                    |> Some
-                | _ -> None
-    else
-        None
+            let argument = argument.[1 .. argument.Length - 2] // Remove quotes
+            match argParsers.TryFind kind with
+            | None -> Error (UnknownKind(lineNumber, kind))
+            | Some parse -> parse(lineNumber, argument)
 
 let getDirectives sourceLines =
     sourceLines
     |> List.mapi (fun i line -> i + 1, line)
-    |> List.choose tryParseDirective
+    |> List.choose tryFindRunfsDirective
+    |> List.map tryParseDirective
     |> List.sequenceResultA

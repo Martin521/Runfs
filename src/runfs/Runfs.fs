@@ -25,7 +25,7 @@ let ProjectFileName = ProjectName + ".fsproj"
 let DllFileName = ProjectName + ".dll"
 let NoRestore = false
 
-let private GetTempPath(entryPointFullPath: string) =
+let private GetProjectDirectoryPath(fullSourcePath: string) =
     let SystemTempPath =
         // We want a location where permissions are expected to be restricted to the current user.
         let directory =
@@ -36,8 +36,8 @@ let private GetTempPath(entryPointFullPath: string) =
 
         Path.Join(directory, ThisPackageName);
     // Include entry point file name so the directory name is not completely opaque.
-    let fileName = Path.GetFileNameWithoutExtension entryPointFullPath
-    let hash = longhash (entryPointFullPath.ToLowerInvariant())
+    let fileName = Path.GetFileNameWithoutExtension fullSourcePath
+    let hash = longhash (fullSourcePath.ToLowerInvariant())
     let directoryName = $"{fileName}-{hash}"
     Path.Join(SystemTempPath, directoryName)
 
@@ -54,40 +54,33 @@ let wrap showTimings name f =
 
 
 /// TODO
-/// Directives:
-///   move quote check/removal to regex?
-///   add "checkArg" function argument to tryParse => finish refactoring
-///   go back to C# compatible directives like #r_package
-/// error handling: use railway for directives => finish dependencies
-/// dont compute directives if no source change
-/// show build output only when build errors or verbose (=> 2 versions of exec)
 /// check build binlog for possible optimization
 /// clean my repos
 /// readme/ blog
 /// fsharp/lang-design issue: parse and ignore #:
 /// source, project refs
 /// github actions
-let run (options, entryPointSourcePathX, args) =
+let run (options, sourcePath, args) =
     let showTimings = Set.contains "time" options
     let verbose = Set.contains "verbose" options
     let noDependencyCheck = Set.contains "no-dependency-check" options
     let inline wrap name f = wrap showTimings name f
 
     result {
-        let! sourcePath, projectDirectoryPath, projectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
+        let! fullSourcePath, projectDirectoryPath, projectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
             wrap "creating paths" <| fun () -> result {
-                do! File.Exists entryPointSourcePathX |> Result.requireTrue (InvalidSourcePath entryPointSourcePathX)
+                do! File.Exists sourcePath |> Result.requireTrue (InvalidSourcePath sourcePath)
 
-                let entryPointSourcePath = Path.GetFullPath entryPointSourcePathX
-                let tempPath = GetTempPath entryPointSourcePath
-                Directory.CreateDirectory tempPath |> ignore
+                let fullSourcePath = Path.GetFullPath sourcePath
+                let projectDirectoryPath = GetProjectDirectoryPath fullSourcePath
+                Directory.CreateDirectory projectDirectoryPath |> ignore
                 return
-                    entryPointSourcePath,
-                    tempPath,
-                    Path.Join(tempPath, ProjectFileName),
-                    Path.Join(tempPath, DependenciesFileName),
-                    Path.Join(tempPath, SourceHashFileName),
-                    Path.Join(tempPath, "artifacts/bin/debug", DllFileName)
+                    fullSourcePath,
+                    projectDirectoryPath,
+                    Path.Join(projectDirectoryPath, ProjectFileName),
+                    Path.Join(projectDirectoryPath, DependenciesFileName),
+                    Path.Join(projectDirectoryPath, SourceHashFileName),
+                    Path.Join(projectDirectoryPath, "artifacts/bin/debug", DllFileName)
             }
 
         let! sourceHash, directives = wrap "reading source and computing hash and directives" <| fun () -> result {
@@ -107,7 +100,7 @@ let run (options, entryPointSourcePathX, args) =
                 return ""
             else
                 let! sourceDir =
-                    sourcePath |> Path.GetDirectoryName |> Result.requireNotNull (InvalidSourceDirectory sourcePath)
+                    fullSourcePath |> Path.GetDirectoryName |> Result.requireNotNull (InvalidSourceDirectory sourcePath)
                 return computeDependenciesHash (string sourceDir) directives
         }
 
@@ -125,19 +118,27 @@ let run (options, entryPointSourcePathX, args) =
         
         if dependenciesChanged || sourceChanged then
             do! wrap "creating and writing project file" <| fun () ->
-                let projectFileLines = createProjectFileLines directives sourcePath
+                let projectFileLines = createProjectFileLines directives fullSourcePath
                 File.WriteAllLines(projectFilePath, projectFileLines) |> Ok
 
         if dependenciesChanged then
             do! wrap "running dotnet restore" <| fun () ->
                 File.Delete dependenciesHashPath
-                let exitCode = runCommand "dotnet" ["restore"; if not verbose then "-v:q"] projectDirectoryPath
+                let exitCode, stdoutLines, stderrLines =
+                    runCommandCollectOutput "dotnet" ["restore"; if not verbose then "-v:q"] projectDirectoryPath
+                if exitCode <> 0 then
+                    stdoutLines |> List.iter (printfn "%s")
+                    stderrLines |> List.iter (printfn "%s")
                 Result.requireEqual exitCode 0 RestoreError
 
         if sourceChanged || dependenciesChanged then
             do! wrap "running dotnet build" <| fun () ->
                 let args = ["build"; "--no-restore"; "-consoleLoggerParameters:NoSummary"; if not verbose then "-v:q"]
-                let exitCode = runCommand "dotnet" args projectDirectoryPath
+                let exitCode, stdoutLines, stderrLines =
+                    runCommandCollectOutput "dotnet" args projectDirectoryPath
+                if exitCode <> 0 then
+                    stdoutLines |> List.iter (printfn "%s")
+                    stderrLines |> List.iter (printfn "%s")
                 Result.requireEqual exitCode 0 BuildError
 
         if dependenciesChanged then
@@ -158,5 +159,5 @@ let clearCaches () =
     let rec deleteAll path =
         for file in Directory.GetFiles path do File.Delete file
         for dir in Directory.GetDirectories path do deleteAll dir; Directory.Delete dir
-    GetTempPath "clear" |> Path.GetDirectoryName |> string |> deleteAll
+    GetProjectDirectoryPath "clear" |> Path.GetDirectoryName |> string |> deleteAll
     0

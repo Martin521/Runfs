@@ -21,7 +21,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v4
       - name: Restore
-        run: echo $PWD && dotnet restore
+        run: echo $PWD && ls . && ls src && ls src/Runfs && dotnet restore
       - name: Build
         run: dotnet build -c Release --no-restore
       - name: Test

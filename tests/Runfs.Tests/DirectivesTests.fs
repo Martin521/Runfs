@@ -19,13 +19,14 @@ let ``Directives are correctly parsed`` () =
     let sourceFile = Path.Join(testFileDirectory, "DirectivesTestSource.fs")
     let sourceLines = File.ReadAllLines sourceFile |> Array.toList
     match getDirectives sourceLines with
-    | Error _ -> Assert.Fail "No errors"
+    | Error _ -> Assert.Fail "Unexpected errors"
     | Ok directives ->
         Assert.Equal(directives.Length, expectedDirectives.Length)
         List.zip directives expectedDirectives |> List.iter Assert.Equal
 
 let expectedErrors = [
-    InvalidDirectiveArgument(7, "MySdk,")
+    MissingPropertyValue(4, "myprop:42")
+    MissingPropertyValue(5, "TargetFramework, net8.0")
     ]
 
 [<Fact>]
@@ -37,6 +38,6 @@ let ``Incorrect directives create errors`` () =
         Assert.Equal(errors.Length, expectedErrors.Length)
         List.zip errors expectedErrors |> List.iter Assert.Equal
     | Ok directives ->
-        Assert.Fail "Errors"
+        Assert.Fail "Unexpected: no errors"
 
  

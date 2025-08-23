@@ -36,12 +36,16 @@ let main argv =
                 | CaughtException ex -> [$"Unexpected: {ex.Message}"]
                 | InvalidSourcePath s -> [$"Invalid source path: {s}"]
                 | InvalidSourceDirectory s -> [$"Invalid source directory: {s}"]
-                | RestoreError -> [$" Restore error"]
-                | BuildError -> [$" Build error"]
+                | RestoreError -> [$"Restore error"]
+                | BuildError -> [$"Build error"]
                 | DirectiveError parseErrors ->
                     let getParseErrorString parseError =
                         match parseError with
-                        | InvalidDirectiveArgument(line, arg) -> $"Source line %3d{line}: Invalid directive argument {arg}"
+                        | UnknownKind(n, kind) -> $"Line {n} Unknown Runfs directive {kind}"
+                        | MissingArgument n -> $"Line {n}: Missing directive argument"
+                        | ArgumentNotQuoted(n, s) -> $"Line {n}: Directive arguments must be quoted (for now)"
+                        | InvalidPropertyName(n, s) -> $"Line {n}: Invalid property name"
+                        | MissingPropertyValue(n, s) -> $"Line {n}: Missing property value"
                     parseErrors |> List.map getParseErrorString
             printfn $"{ThisPackageName}: {errorStrings.Length} stopped with error(s):"
             errorStrings |> List.iter (printfn "  %s")
