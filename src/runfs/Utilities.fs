@@ -32,4 +32,5 @@ let runCommand executable (args: string list) workingDirectory =
     p.BeginOutputReadLine()
     p.BeginErrorReadLine()
     p.WaitForExit()
+    p.ExitCode
 

@@ -45,10 +45,8 @@ let rec private findImplicitBuildFileNames (directory: DirectoryInfo) fileNameLi
     | null -> found
     | parent -> found @ findImplicitBuildFileNames parent fileNameList
 
-let private collectImplicitDependencies (entryPointSourcePath: string) =
-    let entryPointFile = FileInfo entryPointSourcePath
-    let directory: DirectoryInfo = match entryPointFile.Directory with null -> failwith "ddd" | d -> d
-    let implicitBuildFiles = findImplicitBuildFileNames directory PotentialImplicitBuildFileNames
+let private collectImplicitDependencies (directoryPath: string) =
+    let implicitBuildFiles = findImplicitBuildFileNames (DirectoryInfo directoryPath) PotentialImplicitBuildFileNames
     let ibfWithModTimes = implicitBuildFiles |> List.map (fun f -> f, File.GetLastWriteTimeUtc f)
     {
         ImplicitBuildFilesWithModTime = ibfWithModTimes
@@ -56,9 +54,9 @@ let private collectImplicitDependencies (entryPointSourcePath: string) =
         RuntimeVersion = string RuntimeVersion
     }
 
-let computeDependenciesHash entryPointSourcePath directives =
+let computeDependenciesHash (entryPointDirectoryPath: string) directives =
     let dependencies = {
-        ImplicitDependencies = collectImplicitDependencies entryPointSourcePath
+        ImplicitDependencies = collectImplicitDependencies entryPointDirectoryPath
         Directives = directives
     }
     let options = JsonFSharpOptions.Default().ToJsonSerializerOptions()
