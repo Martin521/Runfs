@@ -3,7 +3,8 @@ open Xunit
 open Runfs.Directives
 open System.IO
 
-let testFileDirectory = "../../../../tests/Runfs.Tests/TestFiles"
+let thisFileDirectory = __SOURCE_DIRECTORY__
+let testFileDirectory = Path.Join(thisFileDirectory, "TestFiles")
 
 let expectedDirectives = [
     Project "abc/xyz.fsproj"

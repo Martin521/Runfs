@@ -55,10 +55,12 @@ let wrap showTimings name f =
 
 /// TODO
 /// check build binlog for possible optimization
+/// e2e tests
+/// source, project refs
+
 /// clean my repos
 /// readme/ blog
 /// fsharp/lang-design issue: parse and ignore #:
-/// source, project refs
 /// github actions
 let run (options, sourcePath, args) =
     let showTimings = Set.contains "time" options
