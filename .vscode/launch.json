@@ -9,11 +9,11 @@
             "type": "coreclr",
             "request": "launch",
             "program": "${workspaceFolder}/artifacts/bin/Runfs/debug/Runfs.dll",
-            "args": ["--verbose", "test1.fs", "arg1", "arg2"],
+            "args": ["--verbose", "tests/Runfs.Tests/TestFiles/test1.fs", "arg1", "arg2"],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
             "console": "internalConsole",
-            "preLaunchTask": "Build: solution"
+            "preLaunchTask": "Build: Runfs.fsproj"
         }
 
     ]

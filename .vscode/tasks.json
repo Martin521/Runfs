@@ -1,5 +1,4 @@
 {
-	"version": "2.0.0",
 	"tasks": [
 		{
 			"type": "msbuild",
@@ -7,11 +6,24 @@
 				"$msCompile"
 			],
 			"group": {
-				"kind": "build",
-				"isDefault": true
+				"kind": "build"
 			},
 			"label": "Build: solution",
 			"detail": "Build the Runfs.sln solution using dotnet build"
-		}
+		},
+        {
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+				"build",
+				"src/Runfs"
+            ],
+            "problemMatcher": "$msCompile",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"label": "Build: Runfs.fsproj"
+        }
 	]
 }

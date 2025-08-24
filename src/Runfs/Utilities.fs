@@ -38,8 +38,8 @@ let runCommandCollectOutput executable (args: string list) workingDirectory =
     let mutable stderrLines = []
     use p = new Process()
     p.StartInfo <- processInfo
-    p.OutputDataReceived.Add (fun ea -> if ea.Data <> null then stdoutLines <- ea.Data::stdoutLines)
-    p.ErrorDataReceived.Add (fun ea -> if ea.Data <> null then stderrLines <- ea.Data::stderrLines)
+    p.OutputDataReceived.Add (fun ea -> if ea.Data <> null then stdoutLines <- string ea.Data :: stdoutLines)
+    p.ErrorDataReceived.Add (fun ea -> if ea.Data <> null then stderrLines <- string ea.Data :: stderrLines)
     p.Start() |> ignore
     p.BeginOutputReadLine()
     p.BeginErrorReadLine()

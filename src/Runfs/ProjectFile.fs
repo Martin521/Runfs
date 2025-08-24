@@ -27,7 +27,7 @@ let private packageLine (name, version) =
     | None -> $"""        <PackageReference Include="{escape name}" />"""
     | Some v -> $"""        <PackageReference Include="{escape name}"" Version="{escape v}"/>"""
 
-let createProjectFileLines directives entryPointSourceFullPath =
+let createProjectFileLines directives entryPointSourceFullPath artifactsPath assemblyName =
     let sdks =
         match directives |> List.choose (function Sdk(n, v) -> Some(n, v) | _ -> None) with
         | [] -> ["Microsoft.NET.Sdk", None]
@@ -41,9 +41,10 @@ let createProjectFileLines directives entryPointSourceFullPath =
     [
         "<Project>"
         "    <PropertyGroup>"
+        $"""        <AssemblyName>{assemblyName}</AssemblyName>"""
         "        <UseArtifactsOutput>true</UseArtifactsOutput>"
         "        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>"
-        "        <ArtifactsPath>artifacts</ArtifactsPath>"
+        $"""        <ArtifactsPath>{escape artifactsPath}</ArtifactsPath>"""
         "    </PropertyGroup>"
         yield! sdks |> List.map (sdkLine "Sdk.props")
         "    <PropertyGroup>"

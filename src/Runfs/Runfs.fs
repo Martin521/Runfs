@@ -14,18 +14,19 @@ type RunfsError =
     | InvalidSourcePath of string
     | InvalidSourceDirectory of string
     | DirectiveError of ParseError list
-    | RestoreError
-    | BuildError
+    | RestoreError of stdout: string list * stderr: string list
+    | BuildError of stdout: string list * stderr: string list
 
 let ThisPackageName = "Runfs"
 let DependenciesFileName = "dependencies.json"
 let SourceHashFileName = "source.hash"
-let ProjectName = "scriptCompile"
+let ProjectName = $"__{ThisPackageName}__"
 let ProjectFileName = ProjectName + ".fsproj"
-let DllFileName = ProjectName + ".dll"
+let AssemblyName = ThisPackageName
+let DllFileName = AssemblyName + ".dll"
 let NoRestore = false
 
-let private GetProjectDirectoryPath(fullSourcePath: string) =
+let private GetArtifactsPath(fullSourcePath: string) =
     let SystemTempPath =
         // We want a location where permissions are expected to be restricted to the current user.
         let directory =
@@ -37,7 +38,7 @@ let private GetProjectDirectoryPath(fullSourcePath: string) =
         Path.Join(directory, ThisPackageName);
     // Include entry point file name so the directory name is not completely opaque.
     let fileName = Path.GetFileNameWithoutExtension fullSourcePath
-    let hash = longhash (fullSourcePath.ToLowerInvariant())
+    let hash = longhash fullSourcePath
     let directoryName = $"{fileName}-{hash}"
     Path.Join(SystemTempPath, directoryName)
 
@@ -54,14 +55,15 @@ let wrap showTimings name f =
 
 
 /// TODO
-/// check build binlog for possible optimization
-/// e2e tests
-/// source, project refs
-
+/// virtual project file
 /// clean my repos
-/// readme/ blog
 /// fsharp/lang-design issue: parse and ignore #:
-/// github actions
+/// readme/ blog
+///    also add TODOS
+///         check build binlog for possible optimization (core compile instead of build target)
+///         e2e tests
+///         source, project refs
+///         release action
 let run (options, sourcePath, args) =
     let showTimings = Set.contains "time" options
     let verbose = Set.contains "verbose" options
@@ -69,24 +71,30 @@ let run (options, sourcePath, args) =
     let inline wrap name f = wrap showTimings name f
 
     result {
-        let! fullSourcePath, projectDirectoryPath, projectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
+        let! fullSourcePath, fullSourceDir, artifactsDir, projectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
             wrap "creating paths" <| fun () -> result {
                 do! File.Exists sourcePath |> Result.requireTrue (InvalidSourcePath sourcePath)
 
                 let fullSourcePath = Path.GetFullPath sourcePath
-                let projectDirectoryPath = GetProjectDirectoryPath fullSourcePath
-                Directory.CreateDirectory projectDirectoryPath |> ignore
+                let! fullSourceDir =
+                    fullSourcePath
+                    |> Path.GetDirectoryName
+                    |> Result.requireNotNull (InvalidSourceDirectory fullSourcePath)
+                    |> Result.map string
+                let artifactsDir = GetArtifactsPath fullSourcePath
+                Directory.CreateDirectory artifactsDir |> ignore
                 return
                     fullSourcePath,
-                    projectDirectoryPath,
-                    Path.Join(projectDirectoryPath, ProjectFileName),
-                    Path.Join(projectDirectoryPath, DependenciesFileName),
-                    Path.Join(projectDirectoryPath, SourceHashFileName),
-                    Path.Join(projectDirectoryPath, "artifacts/bin/debug", DllFileName)
+                    fullSourceDir,
+                    artifactsDir,
+                    Path.Join(fullSourceDir, ProjectFileName),
+                    Path.Join(artifactsDir, DependenciesFileName),
+                    Path.Join(artifactsDir, SourceHashFileName),
+                    Path.Join(artifactsDir, "bin\\debug", DllFileName)
             }
 
         let! sourceHash, directives = wrap "reading source and computing hash and directives" <| fun () -> result {
-            let sourceLines = File.ReadAllLines sourcePath |> Array.toList
+            let sourceLines = File.ReadAllLines fullSourcePath |> Array.toList
             let sourceHash = sourceLines |> String.concat "\n" |> longhash
             let directives = getDirectives sourceLines |> Result.mapError DirectiveError
             let! both = directives |> Result.map (fun ds -> sourceHash, ds)
@@ -101,12 +109,12 @@ let run (options, sourcePath, args) =
             if noDependencyCheck then
                 return ""
             else
-                let! sourceDir =
-                    fullSourcePath |> Path.GetDirectoryName |> Result.requireNotNull (InvalidSourceDirectory sourcePath)
+                let! sourceDir =    //TODO: move up
+                    fullSourcePath |> Path.GetDirectoryName |> Result.requireNotNull (InvalidSourceDirectory fullSourcePath)
                 return computeDependenciesHash (string sourceDir) directives
         }
 
-        let! dependenciesChanged, sourceChanged = wrap "computing build level" <| fun () ->
+        let! dependenciesChanged, sourceChanged, noDll = wrap "computing build level" <| fun () ->
             let dependenciesChanged =
                 if noDependencyCheck then
                     false
@@ -116,32 +124,38 @@ let run (options, sourcePath, args) =
             let sourceChanged =
                 let readPreviousSourceHash() = File.ReadAllText sourceHashPath
                 not (File.Exists sourceHashPath && readPreviousSourceHash() = sourceHash)
-            Ok (dependenciesChanged, sourceChanged)
+            let noDll = not (File.Exists dllPath)
+            Ok (dependenciesChanged, sourceChanged, noDll)
         
-        if dependenciesChanged || sourceChanged then
+        if dependenciesChanged || sourceChanged || noDll then
             do! wrap "creating and writing project file" <| fun () ->
-                let projectFileLines = createProjectFileLines directives fullSourcePath
+                let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
                 File.WriteAllLines(projectFilePath, projectFileLines) |> Ok
 
-        if dependenciesChanged then
+        if dependenciesChanged || noDll then
             do! wrap "running dotnet restore" <| fun () ->
                 File.Delete dependenciesHashPath
+                let args = [
+                    "restore"
+                    if not verbose then "-v:q"
+                    projectFilePath
+                    ]
                 let exitCode, stdoutLines, stderrLines =
-                    runCommandCollectOutput "dotnet" ["restore"; if not verbose then "-v:q"] projectDirectoryPath
-                if exitCode <> 0 then
-                    stdoutLines |> List.iter (printfn "%s")
-                    stderrLines |> List.iter (printfn "%s")
-                Result.requireEqual exitCode 0 RestoreError
+                    runCommandCollectOutput "dotnet" args fullSourceDir
+                if exitCode <> 0 then Error(RestoreError(stdoutLines, stderrLines)) else Ok()
 
-        if sourceChanged || dependenciesChanged then
+        if sourceChanged || dependenciesChanged || noDll then
             do! wrap "running dotnet build" <| fun () ->
-                let args = ["build"; "--no-restore"; "-consoleLoggerParameters:NoSummary"; if not verbose then "-v:q"]
+                let args = [
+                    "build"
+                    "--no-restore"
+                    "-consoleLoggerParameters:NoSummary"
+                    if not verbose then "-v:q"
+                    projectFilePath
+                ]
                 let exitCode, stdoutLines, stderrLines =
-                    runCommandCollectOutput "dotnet" args projectDirectoryPath
-                if exitCode <> 0 then
-                    stdoutLines |> List.iter (printfn "%s")
-                    stderrLines |> List.iter (printfn "%s")
-                Result.requireEqual exitCode 0 BuildError
+                    runCommandCollectOutput "dotnet" args fullSourceDir
+                if exitCode <> 0 then Error(BuildError(stdoutLines, stderrLines)) else Ok()
 
         if dependenciesChanged then
             do! wrap "saving dependencies hash" <| fun () ->
@@ -161,5 +175,5 @@ let clearCaches () =
     let rec deleteAll path =
         for file in Directory.GetFiles path do File.Delete file
         for dir in Directory.GetDirectories path do deleteAll dir; Directory.Delete dir
-    GetProjectDirectoryPath "clear" |> Path.GetDirectoryName |> string |> deleteAll
+    GetArtifactsPath "clear" |> Path.GetDirectoryName |> string |> deleteAll
     0
