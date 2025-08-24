@@ -25,7 +25,7 @@ let runCommand executable (args: string list) workingDirectory =
     p.BeginOutputReadLine()
     p.BeginErrorReadLine()
     p.WaitForExit()
-    p.ExitCode
+    p.ExitCode, [], []
 
 let runCommandCollectOutput executable (args: string list) workingDirectory =
     let processInfo = ProcessStartInfo(executable, args)

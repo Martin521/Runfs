@@ -29,7 +29,7 @@ let main argv =
         errorExitCode
     | Some args ->
         match run args with
-        | Ok exitCode -> exitCode
+        | Ok (exitCode, _, _) -> exitCode
         | Error err ->
             let indent lines = lines |> List.map (fun s -> "    " + s)
             let errorStrings =

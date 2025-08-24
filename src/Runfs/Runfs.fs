@@ -8,6 +8,7 @@ open Runfs.Directives
 open Runfs.ProjectFile
 open Runfs.Dependencies
 open Runfs.Utilities
+open Runfs.Build
 
 type RunfsError =
     | CaughtException of Exception
@@ -68,6 +69,7 @@ let run (options, sourcePath, args) =
     let showTimings = Set.contains "time" options
     let verbose = Set.contains "verbose" options
     let noDependencyCheck = Set.contains "no-dependency-check" options
+    let withOutput = Set.contains "with-output" options
     let inline wrap name f = wrap showTimings name f
 
     result {
@@ -166,7 +168,10 @@ let run (options, sourcePath, args) =
                 File.WriteAllText(sourceHashPath, sourceHash) |> Ok
 
         let! exitCode = wrap "executing program" <| fun () ->
-            runCommand "dotnet" (dllPath::args) "." |> Ok
+            if withOutput then
+                runCommandCollectOutput "dotnet" (dllPath::args) "." |> Ok
+            else
+                runCommand "dotnet" (dllPath::args) "." |> Ok
         
         return exitCode
     }
