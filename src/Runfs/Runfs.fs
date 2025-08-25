@@ -93,7 +93,7 @@ let run (options, sourcePath, args) =
                         Path.Join(artifactsDir, ProjectFileName),
                         Path.Join(artifactsDir, DependenciesFileName),
                         Path.Join(artifactsDir, SourceHashFileName),
-                        Path.Join(artifactsDir, "bin\\debug", DllFileName)
+                        Path.Join(artifactsDir, "bin", "debug", DllFileName)
                 }
 
         let! sourceHash, directives = wrap "reading source and computing hash and directives" <| fun () -> result {
