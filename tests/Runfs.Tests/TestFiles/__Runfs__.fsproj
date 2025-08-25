@@ -3,20 +3,19 @@
         <AssemblyName>Runfs</AssemblyName>
         <UseArtifactsOutput>true</UseArtifactsOutput>
         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-        <ArtifactsPath>C:\Users\Martin\AppData\Local\Temp\Runfs\test1-fc74c07713b10a174ef5bf2ab362c8ad6dc5683e710d2f3c747d36fa602a0d87</ArtifactsPath>
+        <ArtifactsPath>C:\Users\Martin\AppData\Local\Temp\Runfs\test1-b5f58240b3f791a070267eb9dd0de8e92e33088cc3e2f78d9a93598ef06bb7dd</ArtifactsPath>
     </PropertyGroup>
-    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" Version="9.0.304" />
     <PropertyGroup>
         <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
         <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
         <Nullable>enable</Nullable>
-        <myprop>43</myprop>
-        <targetframework>net8.0</targetframework>
     </PropertyGroup>
     <ItemGroup>
     </ItemGroup>
     <ItemGroup>
-        <Compile Include="d:\fsharp\projects\div\Runfs\tests\Runfs.Tests\TestFiles\test1.fs" />
+        <Compile Include="D:\fsharp\projects\div\Runfs\tests\Runfs.Tests\TestFiles\test1.fs" />
     </ItemGroup>
-    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+    <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" Version="9.0.304" />
 </Project>

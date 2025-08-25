@@ -30,7 +30,7 @@ let private packageLine (name, version) =
 let createProjectFileLines directives entryPointSourceFullPath artifactsPath assemblyName =
     let sdks =
         match directives |> List.choose (function Sdk(n, v) -> Some(n, v) | _ -> None) with
-        | [] -> ["Microsoft.NET.Sdk", None]
+        | [] -> ["Microsoft.NET.Sdk", Some "9.0.304"]
         | d -> d
     let properties =
         directives |> List.choose (function Property(n, v) -> Some(n.ToLowerInvariant(), v) | _ -> None) |> Map

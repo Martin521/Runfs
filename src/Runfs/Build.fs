@@ -16,7 +16,7 @@ let verbosity = "normal"
 type Project = {projectInstance: ProjectInstance; parameters: BuildParameters}
 type MsRestoreError = MsRestoreError of string
 
-let createProject projectFilePath projectFileText : Project =
+let createProject projectFilePath (projectFileText: string) : Project =
     let loggerArgs = [|$"--verbosity:{verbosity}"|]
     let consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger loggerArgs
     let loggers = [|consoleLogger|]
@@ -25,17 +25,19 @@ let createProject projectFilePath projectFileText : Project =
         globalProperties,
         loggers,
         ToolsetDefinitionLocations.Default)
-    let createProjectRootElement() =
-        let reader = new StringReader(projectFileText)
-        let xmlReader = XmlReader.Create reader
-        let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
-        projectRoot.FullPath <- projectFilePath
-        projectRoot
-    let projectRoot = createProjectRootElement();
     let options = ProjectOptions()
     options.ProjectCollection <- projectCollection
     options.GlobalProperties <- globalProperties
-    let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
+    // let createProjectRootElement() =
+    //     let reader = new StringReader(projectFileText)
+    //     let xmlReader = XmlReader.Create reader
+    //     let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
+    //     projectRoot.FullPath <- projectFilePath
+    //     projectRoot
+    // let projectRoot = createProjectRootElement();
+    // let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
+    File.WriteAllText(projectFilePath, projectFileText)
+    let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
     let parameters = BuildParameters(projectCollection)
     parameters.Loggers <- loggers
     parameters.LogTaskInputs <- false
