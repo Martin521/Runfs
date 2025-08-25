@@ -2,6 +2,7 @@
 
 open Runfs.Runfs
 open Runfs.Directives
+open Runfs.Build
 
 [<EntryPoint>]
 let main argv =
@@ -37,9 +38,8 @@ let main argv =
                 | CaughtException ex -> [$"Unexpected: {ex.Message}"]
                 | InvalidSourcePath s -> [$"Invalid source path: {s}"]
                 | InvalidSourceDirectory s -> [$"Invalid source directory: {s}"]
-                | RestoreError(stdoutLines, stderrLines) ->
-                    "Restore error" :: indent stdoutLines @ indent stderrLines
-                | BuildError(stdoutLines, stderrLines) ->
+                | RestoreError(MsRestoreError s) -> [$"Restore error: {s}"]
+                | BuildError(stdoutLines, stderrLines) -> 
                     "Build error" :: indent stdoutLines @ indent stderrLines
                 | DirectiveError parseErrors ->
                     let getParseErrorString parseError =

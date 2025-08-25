@@ -14,6 +14,7 @@ open Runfs.ProjectFile
 let verbosity = "normal"
 
 type Project = {projectInstance: ProjectInstance; parameters: BuildParameters}
+type MsRestoreError = MsRestoreError of string
 
 let createProject projectFilePath projectFileText : Project =
     let loggerArgs = [|$"--verbosity:{verbosity}"|]
@@ -40,7 +41,7 @@ let createProject projectFilePath projectFileText : Project =
     parameters.LogTaskInputs <- false
     {projectInstance = projectInstance; parameters = parameters}
 
-let restore project parameters =
+let restore (project: Project) =
     let buildManager = BuildManager.DefaultBuildManager
     let flags =
         BuildRequestDataFlags.ClearCachesAfterBuild
@@ -48,9 +49,11 @@ let restore project parameters =
         ||| BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports
         ||| BuildRequestDataFlags.FailOnUnresolvedSdk
     let restoreRequest =
-        new BuildRequestData(project, [|"Restore"|], null, flags)
+        new BuildRequestData(project.projectInstance, [|"Restore"|], null, flags)
 
-    buildManager.BeginBuild parameters
+    buildManager.BeginBuild project.parameters
     let restoreResult = buildManager.BuildRequest restoreRequest
-    if restoreResult.OverallResult <> BuildResultCode.Success then 1
-    else 0
+    if restoreResult.OverallResult = BuildResultCode.Success then
+        Ok()
+    else
+        Error(MsRestoreError (string restoreResult))

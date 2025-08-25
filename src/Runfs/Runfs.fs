@@ -15,7 +15,7 @@ type RunfsError =
     | InvalidSourcePath of string
     | InvalidSourceDirectory of string
     | DirectiveError of ParseError list
-    | RestoreError of stdout: string list * stderr: string list
+    | RestoreError of MsRestoreError
     | BuildError of stdout: string list * stderr: string list
 
 let ThisPackageName = "Runfs"
@@ -57,6 +57,7 @@ let wrap showTimings name f =
 
 /// TODO
 /// virtual project file
+///   => check about global properties 
 /// clean my repos
 /// fsharp/lang-design issue: parse and ignore #:
 /// readme/ blog
@@ -129,22 +130,15 @@ let run (options, sourcePath, args) =
             let noDll = not (File.Exists dllPath)
             Ok (dependenciesChanged, sourceChanged, noDll)
         
-        if dependenciesChanged || sourceChanged || noDll then
-            do! wrap "creating and writing project file" <| fun () ->
-                let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
-                File.WriteAllLines(projectFilePath, projectFileLines) |> Ok
+        let! project = wrap "creating virtual project" <| fun () ->
+            let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
+            let projectFileText = projectFileLines |> String.concat Environment.NewLine
+            lazy (createProject projectFilePath projectFileText) |> Ok
 
         if dependenciesChanged || noDll then
-            do! wrap "running dotnet restore" <| fun () ->
+            do! wrap "running restore" <| fun () ->
                 File.Delete dependenciesHashPath
-                let args = [
-                    "restore"
-                    if not verbose then "-v:q"
-                    projectFilePath
-                    ]
-                let exitCode, stdoutLines, stderrLines =
-                    runCommandCollectOutput "dotnet" args fullSourceDir
-                if exitCode <> 0 then Error(RestoreError(stdoutLines, stderrLines)) else Ok()
+                restore (project.Force()) |> Result.mapError RestoreError
 
         if sourceChanged || dependenciesChanged || noDll then
             do! wrap "running dotnet build" <| fun () ->

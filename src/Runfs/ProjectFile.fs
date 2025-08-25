@@ -16,8 +16,8 @@ let private escape str = SecurityElement.Escape str |> string
 
 let private sdkLine project (name, version) =
     match version with
-    | Some v -> $"""    <Import Project="{project}" Sdk="{escape name}" Version="{escape v}" />"""
-    | None -> $"""    <Import Project="{project}" Sdk="{escape name}" />"""
+    | Some v -> $"""    <Import Project="{escape project}" Sdk="{escape name}" Version="{escape v}" />"""
+    | None -> $"""    <Import Project="{escape project}" Sdk="{escape name}" />"""
 
 let private propertyLine (name, version) =
     $"""        <{name}>{escape version}</{name}>"""
@@ -41,7 +41,7 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
     [
         "<Project>"
         "    <PropertyGroup>"
-        $"""        <AssemblyName>{assemblyName}</AssemblyName>"""
+        $"""        <AssemblyName>{escape assemblyName}</AssemblyName>"""
         "        <UseArtifactsOutput>true</UseArtifactsOutput>"
         "        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>"
         $"""        <ArtifactsPath>{escape artifactsPath}</ArtifactsPath>"""
