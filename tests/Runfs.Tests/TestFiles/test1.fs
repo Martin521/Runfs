@@ -8,4 +8,3 @@ open System
 let args = System.Environment.GetCommandLineArgs() |> Array.toList |> List.tail
 printfn $"args: {args}" 
 
-

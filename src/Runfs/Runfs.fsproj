@@ -29,7 +29,7 @@
     <Compile Include="Directives.fs" />
     <Compile Include="Dependencies.fs" />
     <Compile Include="ProjectFile.fs" />
-    <Compile Include="Build.fs" />
+    
     <Compile Include="Runfs.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

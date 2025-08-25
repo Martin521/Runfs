@@ -8,7 +8,6 @@ open Runfs.Directives
 open Runfs.ProjectFile
 open Runfs.Dependencies
 open Runfs.Utilities
-open Runfs.Build
 
 type RunfsError =
     | CaughtException of Exception
@@ -21,7 +20,7 @@ type RunfsError =
 let ThisPackageName = "Runfs"
 let DependenciesFileName = "dependencies.json"
 let SourceHashFileName = "source.hash"
-let ProjectName = $"__{ThisPackageName}__"
+let ProjectName = $"__artifact of {ThisPackageName} _ can be deleted__"
 let ProjectFileName = ProjectName + ".fsproj"
 let AssemblyName = ThisPackageName
 let DllFileName = AssemblyName + ".dll"
@@ -73,27 +72,29 @@ let run (options, sourcePath, args) =
     let inline wrap name f = wrap showTimings name f
 
     result {
-        let! fullSourcePath, fullSourceDir, artifactsDir, projectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
-            wrap "creating paths" <| fun () -> result {
-                do! File.Exists sourcePath |> Result.requireTrue (InvalidSourcePath sourcePath)
+        let! fullSourcePath, fullSourceDir, artifactsDir, projectFilePath,
+            savedProjectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
+                wrap "creating paths" <| fun () -> result {
+                    do! File.Exists sourcePath |> Result.requireTrue (InvalidSourcePath sourcePath)
 
-                let fullSourcePath = Path.GetFullPath sourcePath
-                let! fullSourceDir =
-                    fullSourcePath
-                    |> Path.GetDirectoryName
-                    |> Result.requireNotNull (InvalidSourceDirectory fullSourcePath)
-                    |> Result.map string
-                let artifactsDir = GetArtifactsPath fullSourcePath
-                Directory.CreateDirectory artifactsDir |> ignore
-                return
-                    fullSourcePath,
-                    fullSourceDir,
-                    artifactsDir,
-                    Path.Join(fullSourceDir, ProjectFileName),
-                    Path.Join(artifactsDir, DependenciesFileName),
-                    Path.Join(artifactsDir, SourceHashFileName),
-                    Path.Join(artifactsDir, "bin\\debug", DllFileName)
-            }
+                    let fullSourcePath = Path.GetFullPath sourcePath
+                    let! fullSourceDir =
+                        fullSourcePath
+                        |> Path.GetDirectoryName
+                        |> Result.requireNotNull (InvalidSourceDirectory fullSourcePath)
+                        |> Result.map string
+                    let artifactsDir = GetArtifactsPath fullSourcePath
+                    Directory.CreateDirectory artifactsDir |> ignore
+                    return
+                        fullSourcePath,
+                        fullSourceDir,
+                        artifactsDir,
+                        Path.Join(fullSourceDir, ProjectFileName),
+                        Path.Join(artifactsDir, ProjectFileName),
+                        Path.Join(artifactsDir, DependenciesFileName),
+                        Path.Join(artifactsDir, SourceHashFileName),
+                        Path.Join(artifactsDir, "bin\\debug", DllFileName)
+                }
 
         let! sourceHash, directives = wrap "reading source and computing hash and directives" <| fun () -> result {
             let sourceLines = File.ReadAllLines fullSourcePath |> Array.toList
@@ -132,11 +133,13 @@ let run (options, sourcePath, args) =
         if dependenciesChanged || sourceChanged || noDll then
             do! wrap "creating and writing project file" <| fun () ->
                 let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
-                File.WriteAllLines(projectFilePath, projectFileLines) |> Ok
+                File.WriteAllLines(savedProjectFilePath, projectFileLines) |> Ok
 
         if dependenciesChanged || noDll then
             do! wrap "running dotnet restore" <| fun () ->
                 File.Delete dependenciesHashPath
+                if File.Exists projectFilePath then File.Delete projectFilePath
+                File.Copy(savedProjectFilePath, projectFilePath)
                 let args = [
                     "restore"
                     if not verbose then "-v:q"
@@ -144,10 +147,13 @@ let run (options, sourcePath, args) =
                     ]
                 let exitCode, stdoutLines, stderrLines =
                     runCommandCollectOutput "dotnet" args fullSourceDir
+                File.Delete projectFilePath
                 if exitCode <> 0 then Error(RestoreError(stdoutLines, stderrLines)) else Ok()
 
         if sourceChanged || dependenciesChanged || noDll then
             do! wrap "running dotnet build" <| fun () ->
+                if File.Exists projectFilePath then File.Delete projectFilePath
+                File.Copy(savedProjectFilePath, projectFilePath)
                 let args = [
                     "build"
                     "--no-restore"
@@ -157,6 +163,7 @@ let run (options, sourcePath, args) =
                 ]
                 let exitCode, stdoutLines, stderrLines =
                     runCommandCollectOutput "dotnet" args fullSourceDir
+                File.Delete projectFilePath
                 if exitCode <> 0 then Error(BuildError(stdoutLines, stderrLines)) else Ok()
 
         if dependenciesChanged then
