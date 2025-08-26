@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Description>A prototype for investigating if and how the "dotnet run app.cs" functionality can be provided for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -10,8 +10,8 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <!-- NuGet settings -->
-    <PackageId>Runfs</PackageId>
-    <PackageTags>Trial</PackageTags>
+    <PackageId>runfs</PackageId>
+    <PackageTags>F#</PackageTags>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
     <!-- <PackageReleaseNotes>https://github.com/Martin521/Runfs/RELEASE_NOTES.md</PackageReleaseNotes> -->
@@ -19,7 +19,7 @@
     <PackageIcon>
     </PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="" />
@@ -36,6 +36,6 @@
   <ItemGroup>
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
     <PackageReference Include="FsToolkit.ErrorHandling" Version="5.0.1" />
-    <PackageReference Include="Microsoft.Build" Version="17.14.8" />
+    <!-- <PackageReference Include="Microsoft.Build" Version="17.14.8" /> -->
   </ItemGroup>
 </Project>
