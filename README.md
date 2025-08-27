@@ -3,7 +3,7 @@
 This is a demonstrator (work in progress), made to investigate if and how the "[dotnet run app.cs](https://devblogs.microsoft.com/dotnet/announcing-dotnet-run-app/)" functionality can be provided for F#.
 
 You can use it to directly run an F# `.fs` source file.
-So, if you want to build a small tool, you don't need to bother with project files and artifacts any more, you rather just create your source file and run it with runfs. 
+So, if you want to build a small tool, you don't need to bother with projects and folders and artifacts any more. You rather just create your source file and run it with runfs. 
 
 The source file can contain directives to reference libraries and to influence the build process, see section [Directives](#directives).
 
@@ -49,32 +49,27 @@ All of the above is not related to fsi interactive mode, which can be used in bo
 
 ## Learnings
 
-Next to having fun and learning new stuff, the main goal of this project is to investigate viability of `dotnet run app.fs` and to create clarity on requirements and missing pieces.
+The main goal of this project is to investigate viability of `dotnet run app.fs` and to create clarity on requirements and missing pieces.
 
-I started by looking into extending the sdk code to accomodate F# input. This would have meant, however, to work with some particularly ugly (in my eyes) C# code. So, I settled for an independent tool for the investigation, reproducing the functionality as closely as possible.
+I started by looking into extending the sdk code to accomodate F# input. This would have meant, however, to work with some particularly ugly (in my eyes) C# code. So, I chose to create an independent tool for the investigation, reproducing the functionality as closely as possible.
 
 Main learnings
 - This has to be about running .fs files, not scripts.
 - A small compiler change is needed to allow for the directive format.
 - The most important missing piece is editor support.
-- I am so lucky I am not forced to earn money by working in a C# (or Java for that matter) shop.
 
 Open items
-- I did not succeed yet in replicating the "virtual project file" approach. The `BuildManager` doesn't find the sdk, probably because I am missing the right global build properties that `dotnet run` has available inside. I am not sure if there is a workaround. For now, I settled for a less nice file-based approach. Less nice because the script location must be writable.
+- I did not succeed yet in replicating the "virtual project file" approach. If I use the msbuild API's `BuildManager`, it doesn't find the sdk, probably because I am missing the right global build properties that `dotnet run` has available internally. I am not sure if there is a workaround. For now, I settled for a less nice file-based approach. Less nice because the script location must be writable.
 - Not sure yet if the "compile only" shortcut can easily be replicated for F#.
 
 ## TODOs
 
-Internal
-- add more tests, automate publishing
-- fix case sensitivity issue in Directives.fs
-- Rid-package?
-- virtual project file
-- possibly optimize the build step (cache core compile input beyond restore)
-- implement the #project, #source and #dll directives
-- implement `--convert`
+Runfs
+- investigate the open items: virtual project file, optimize the build step (cache core compile input beyond restore)
+- add more tests, automate publishing, possibly Rid-package, fix case sensitivity issue in Directives.fs
+- implement the #project, #source and #dll directives and `--convert`
 
-External
+Elsewhere
 - propose and possibly implement a compiler change so that the 'dotnet run app.cs' syntax for directives can be used
 - Ionide/FSAC support
 - collect feedback for an eventual `dotnet run app.fs`
