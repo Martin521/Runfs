@@ -2,7 +2,7 @@
 
 This is a demonstrator (work in progress), made to investigate if and how the "[dotnet run app.cs](https://devblogs.microsoft.com/dotnet/announcing-dotnet-run-app/)" functionality can be provided for F#.
 
-You can use it to directly run an F# source file.
+You can use it to directly run an F# `.fs` source file.
 So, if you want to build a small tool, you don't need to bother with project files and artifacts any more, you rather just create your source file and run it with runfs. 
 
 The source file can contain directives to reference libraries and to influence the build process, see section [Directives](#directives).
@@ -17,7 +17,7 @@ dotnet runfs app.fs
 ```
 ## Directives
 
-The following directives (source lines) are (or will be) recognized by runfs:
+The following directives (source lines) are recognized by runfs:
 
 - `#r_package "pp@1.0.0"` - references package pp, version 1.0.0
 - `#r_sdk "mysdk@0.0.1"` - references an sdk
@@ -26,14 +26,14 @@ The following directives (source lines) are (or will be) recognized by runfs:
 - `#r_dll "mylib.dll"` - references a library [not yet implemented]
 - `#r_source "utilities.fs"` - references a source file [not yet implemented]
 
-> The above directive syntax is preliminary and made to work with the current F# compiler (the parser accepts and ignores them). Ideally, the syntax defined for "dotnet run app.cs" should be reused, for example `#:package pp@1.0.0`, but this needs a compiler fix first.
+> The above directive syntax is preliminary and made to work with the current F# compiler (the parser accepts and ignores them). Ideally, the syntax defined for "dotnet run app.cs" should be reused, like `#:package pp@1.0.0`, but this needs a compiler fix first.
 
 ## How does runfs relate to fsi?
 
 | | `dotnet runfs app.fs` | `dotnet fsi app.fsx` |
 | --- | --- | --- |
-| F# grammar | implementationFile grammar (full F# grammar) | interaction grammar (limited script grammar) |
-| reference resolution | dotnet build | home made, dependence on the package tool |
+| F# grammar | `implementationFile` grammar (full F# grammar) | `interaction` grammar (limited script grammar) |
+| reference resolution | dotnet build | custom, dependence on the package tool |
 | startup time initial run | 2 sec | 2 sec |
 | startup time subsequent runs | 100 ms | 2 sec |
 | conversion to F# project | easy (`dotnet runfs --convert app.fs`) | add namespaces / modules, create project file, <br/> move references to project file ... |
@@ -45,7 +45,7 @@ The following directives (source lines) are (or will be) recognized by runfs:
 
 ### fsi interactive
 
-All of the above is not related to fsi interactive mode, which can of course be used in both cases with snippets from the source file ('alt Enter').
+All of the above is not related to fsi interactive mode, which can be used in both cases with snippets from the source file ('alt Enter').
 
 ## Learnings
 

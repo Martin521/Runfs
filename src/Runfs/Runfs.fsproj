@@ -3,7 +3,7 @@
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
     <Version>1.0.2</Version>
-    <Description>A prototype for investigating if and how the "dotnet run app.cs" functionality can be provided for F#.</Description>
+    <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
     <!-- Build settings -->
