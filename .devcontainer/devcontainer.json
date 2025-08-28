@@ -1,0 +1,23 @@
+// For format details, see https://aka.ms/vscode-remote/devcontainer.json or this file's README at:
+{
+    "name": "Runfs",
+    "image": "mcr.microsoft.com/dotnet/sdk:9.0.304",
+    "features": {
+        "ghcr.io/devcontainers/features/common-utils:2.5.4": {},
+        "ghcr.io/devcontainers/features/git:1.3.4": {},
+        "ghcr.io/devcontainers/features/github-cli:1.0.14": {},
+        "ghcr.io/devcontainers/features/dotnet:2.3.0": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "GitHub.copilot",
+                "GitHub.vscode-github-actions",
+                "ms-dotnettools.vscode-dotnet-runtime",
+                "ms-dotnettools.csharp",
+                "Ionide.Ionide-fsharp",
+                "tintoy.msbuild-project-tools"
+            ]
+        }
+    }
+}

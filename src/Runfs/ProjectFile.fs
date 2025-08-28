@@ -25,7 +25,7 @@ let private propertyLine (name, version) =
 let private packageLine (name, version) =
     match version with
     | None -> $"""        <PackageReference Include="{escape name}" />"""
-    | Some v -> $"""        <PackageReference Include="{escape name}"" Version="{escape v}"/>"""
+    | Some v -> $"""        <PackageReference Include="{escape name}" Version="{escape v}"/>"""
 
 let createProjectFileLines directives entryPointSourceFullPath artifactsPath assemblyName =
     let sdks =
