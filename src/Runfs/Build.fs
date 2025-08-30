@@ -19,7 +19,7 @@ type Project =
     interface IDisposable with
         member this.Dispose() = this.buildManager.EndBuild()
 
-type MsRestoreError = MsRestoreError of string
+type MSBuildError = MSBuildError of target: string * result: string
 
 let initMSBuild() = MSBuildLocator.RegisterDefaults() |> ignore
 
@@ -54,18 +54,18 @@ let createProject projectFilePath (projectFileText: string) : Project =
     buildManager.BeginBuild parameters
     {buildManager = buildManager; projectInstance = projectInstance}
 
-let restore (project: Project) =
+let build target project =
     let buildManager = BuildManager.DefaultBuildManager
     let flags =
         BuildRequestDataFlags.ClearCachesAfterBuild
         ||| BuildRequestDataFlags.SkipNonexistentTargets
         ||| BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports
         ||| BuildRequestDataFlags.FailOnUnresolvedSdk
-    let restoreRequest =
-        new BuildRequestData(project.projectInstance, [|"Restore"|], null, flags)
+    let buildRequest =
+        new BuildRequestData(project.projectInstance, [|target|], null, flags)
 
-    let restoreResult = buildManager.BuildRequest restoreRequest
-    if restoreResult.OverallResult = BuildResultCode.Success then
+    let buildResult = buildManager.BuildRequest buildRequest
+    if buildResult.OverallResult = BuildResultCode.Success then
         Ok()
     else
-        Error(MsRestoreError (string restoreResult))
+        Error(MSBuildError(target, string buildResult))

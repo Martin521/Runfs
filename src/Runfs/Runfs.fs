@@ -15,8 +15,8 @@ type RunfsError =
     | InvalidSourcePath of string
     | InvalidSourceDirectory of string
     | DirectiveError of ParseError list
-    | RestoreError of MsRestoreError
-    | BuildError of stdout: string list * stderr: string list
+    | BuildError of MSBuildError
+    | XBuildError of string list * string list
 
 let ThisPackageName = "Runfs"
 let DependenciesHashFileName = "dependencies.hash"
@@ -129,8 +129,9 @@ let run (options, sourcePath, args) =
                 createProject projectFilePath projectFileText |> Ok
         
             if dependenciesChanged || noDll then
+                File.Delete dependenciesHashPath
                 do! guardAndTime "running msbuild restore" <| fun () -> result {
-                    do! restore project |> Result.mapError RestoreError
+                    do! build "restore" project |> Result.mapError BuildError
                 }
 
             do! guardAndTime "running dotnet build" <| fun () ->
@@ -146,7 +147,7 @@ let run (options, sourcePath, args) =
                 let exitCode, stdoutLines, stderrLines =
                     runCommandCollectOutput "dotnet" args fullSourceDir
                 File.Delete projectFilePath
-                if exitCode <> 0 then Error(BuildError(stdoutLines, stderrLines)) else Ok()
+                if exitCode <> 0 then Error(XBuildError(stdoutLines, stderrLines)) else Ok()
 
             if dependenciesChanged then
                 do! guardAndTime "saving dependencies hash" <| fun () ->

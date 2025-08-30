@@ -38,8 +38,8 @@ let main argv =
                 | CaughtException ex -> [$"Unexpected: {ex.Message}"]
                 | InvalidSourcePath s -> [$"Invalid source path: {s}"]
                 | InvalidSourceDirectory s -> [$"Invalid source directory: {s}"]
-                | RestoreError(MsRestoreError s) -> [$"Restore error: {s}"]
-                | BuildError(stdoutLines, stderrLines) -> 
+                | BuildError(MSBuildError(target, result)) -> [$"MSBuild {target} error: {result}"]
+                | XBuildError(stdoutLines, stderrLines) -> 
                     "Build error" :: indent stdoutLines @ indent stderrLines
                 | DirectiveError parseErrors ->
                     let getParseErrorString parseError =
