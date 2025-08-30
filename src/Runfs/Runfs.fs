@@ -122,33 +122,17 @@ let run (options, sourcePath, args) =
             Ok (dependenciesChanged, sourceChanged, noDll)
         
         if dependenciesChanged || sourceChanged || noDll then
-            do! guardAndTime "creating and writing project file" <| fun () ->
+            use! project = guardAndTime "creating and writing project file" <| fun () ->
                 let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
-                File.WriteAllLines(savedProjectFilePath, projectFileLines) |> Ok
+                File.WriteAllLines(savedProjectFilePath, projectFileLines)
+                let projectFileText = File.ReadAllText savedProjectFilePath
+                createProject projectFilePath projectFileText |> Ok
         
-        do! guardAndTime "running msbuild restore" <| fun () -> result {
-            let projectFileText = File.ReadAllText savedProjectFilePath
-            let project = createProject projectFilePath projectFileText
-            do! restore project |> Result.mapError RestoreError
-        }
+            if dependenciesChanged || noDll then
+                do! guardAndTime "running msbuild restore" <| fun () -> result {
+                    do! restore project |> Result.mapError RestoreError
+                }
 
-
-        // if dependenciesChanged || noDll then
-        //     do! guardAndTime "running dotnet restore" <| fun () ->
-        //         File.Delete dependenciesHashPath
-        //         if File.Exists projectFilePath then File.Delete projectFilePath
-        //         File.Copy(savedProjectFilePath, projectFilePath)
-        //         let args = [
-        //             "restore"
-        //             if not verbose then "-v:q"
-        //             projectFilePath
-        //             ]
-        //         let exitCode, stdoutLines, stderrLines =
-        //             runCommandCollectOutput "dotnet" args fullSourceDir
-        //         File.Delete projectFilePath
-        //         if exitCode <> 0 then Error(BuildError(stdoutLines, stderrLines)) else Ok()
-
-        if sourceChanged || dependenciesChanged || noDll then
             do! guardAndTime "running dotnet build" <| fun () ->
                 if File.Exists projectFilePath then File.Delete projectFilePath
                 File.Copy(savedProjectFilePath, projectFilePath)
@@ -164,13 +148,13 @@ let run (options, sourcePath, args) =
                 File.Delete projectFilePath
                 if exitCode <> 0 then Error(BuildError(stdoutLines, stderrLines)) else Ok()
 
-        if dependenciesChanged then
-            do! guardAndTime "saving dependencies hash" <| fun () ->
-                File.WriteAllText(dependenciesHashPath, dependenciesHash) |> Ok
+            if dependenciesChanged then
+                do! guardAndTime "saving dependencies hash" <| fun () ->
+                    File.WriteAllText(dependenciesHashPath, dependenciesHash) |> Ok
 
-        if sourceChanged then
-            do! guardAndTime "saving source hash" <| fun () ->
-                File.WriteAllText(sourceHashPath, sourceHash) |> Ok
+            if sourceChanged then
+                do! guardAndTime "saving source hash" <| fun () ->
+                    File.WriteAllText(sourceHashPath, sourceHash) |> Ok
 
         let! exitCode = guardAndTime "executing program" <| fun () ->
             runCommand "dotnet" (dllPath::args) "." |> Ok
