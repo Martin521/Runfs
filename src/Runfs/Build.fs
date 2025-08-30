@@ -6,21 +6,27 @@ open Microsoft.Build.Evaluation
 open Microsoft.Build.Execution
 open Microsoft.Build.Framework
 open Microsoft.Build.Logging
+open Microsoft.Build.Locator
 open System
 open System.IO
 open System.Xml
 open Runfs.ProjectFile
 
-let verbosity = "normal"
+let private verbosity = "quiet"
 
 type Project = {projectInstance: ProjectInstance; parameters: BuildParameters}
 type MsRestoreError = MsRestoreError of string
 
+let initBuild() = MSBuildLocator.RegisterDefaults() |> ignore
+let finishBuild() = BuildManager.DefaultBuildManager.EndBuild()
+
 let createProject projectFilePath (projectFileText: string) : Project =
-    let loggerArgs = [|$"--verbosity:{verbosity}"|]
+    let loggerArgs = [|$"--verbosity:{verbosity}"; "NoSummary"|]
     let consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger loggerArgs
     let loggers = [|consoleLogger|]
-    let globalProperties = Collections.Generic.Dictionary()  // TODO: empty ok?
+    let globalProperties =
+        dict [
+        ]
     let projectCollection = new ProjectCollection(
         globalProperties,
         loggers,
