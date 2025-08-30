@@ -14,11 +14,14 @@ open Runfs.ProjectFile
 
 let private verbosity = "quiet"
 
-type Project = {projectInstance: ProjectInstance; parameters: BuildParameters}
+type Project =
+    {buildManager: BuildManager; projectInstance: ProjectInstance}
+    interface IDisposable with
+        member this.Dispose() = this.buildManager.EndBuild()
+
 type MsRestoreError = MsRestoreError of string
 
-let initBuild() = MSBuildLocator.RegisterDefaults() |> ignore
-let finishBuild() = BuildManager.DefaultBuildManager.EndBuild()
+let initMSBuild() = MSBuildLocator.RegisterDefaults() |> ignore
 
 let createProject projectFilePath (projectFileText: string) : Project =
     let loggerArgs = [|$"--verbosity:{verbosity}"; "NoSummary"|]
@@ -44,10 +47,12 @@ let createProject projectFilePath (projectFileText: string) : Project =
     // let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
     File.WriteAllText(projectFilePath, projectFileText)
     let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
-    let parameters = BuildParameters(projectCollection)
+    let parameters = BuildParameters projectCollection
     parameters.Loggers <- loggers
     parameters.LogTaskInputs <- false
-    {projectInstance = projectInstance; parameters = parameters}
+    let buildManager = BuildManager.DefaultBuildManager
+    buildManager.BeginBuild parameters
+    {buildManager = buildManager; projectInstance = projectInstance}
 
 let restore (project: Project) =
     let buildManager = BuildManager.DefaultBuildManager
@@ -59,7 +64,6 @@ let restore (project: Project) =
     let restoreRequest =
         new BuildRequestData(project.projectInstance, [|"Restore"|], null, flags)
 
-    buildManager.BeginBuild project.parameters
     let restoreResult = buildManager.BuildRequest restoreRequest
     if restoreResult.OverallResult = BuildResultCode.Success then
         Ok()

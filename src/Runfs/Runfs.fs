@@ -61,7 +61,7 @@ let run (options, sourcePath, args) =
     let noDependencyCheck = Set.contains "no-dependency-check" options
     let inline guardAndTime name f = guardAndTime showTimings name f
 
-    initBuild()
+    initMSBuild()
 
     result {
         let! fullSourcePath, fullSourceDir, artifactsDir, projectFilePath,
@@ -175,8 +175,6 @@ let run (options, sourcePath, args) =
         let! exitCode = guardAndTime "executing program" <| fun () ->
             runCommand "dotnet" (dllPath::args) "." |> Ok
         
-        finishBuild()
-
         return exitCode
     }
 
