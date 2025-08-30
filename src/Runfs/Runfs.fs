@@ -126,7 +126,7 @@ let run (options, sourcePath, args) =
                 let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
                 File.WriteAllLines(savedProjectFilePath, projectFileLines)
                 let projectFileText = File.ReadAllText savedProjectFilePath
-                createProject projectFilePath projectFileText |> Ok
+                createProject verbose projectFilePath projectFileText |> Ok
         
             if dependenciesChanged || noDll then
                 File.Delete dependenciesHashPath

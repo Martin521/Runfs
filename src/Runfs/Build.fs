@@ -12,8 +12,6 @@ open System.IO
 open System.Xml
 open Runfs.ProjectFile
 
-let private verbosity = "quiet"
-
 type Project =
     {buildManager: BuildManager; projectInstance: ProjectInstance}
     interface IDisposable with
@@ -23,8 +21,9 @@ type MSBuildError = MSBuildError of target: string * result: string
 
 let initMSBuild() = MSBuildLocator.RegisterDefaults() |> ignore
 
-let createProject projectFilePath (projectFileText: string) : Project =
-    let loggerArgs = [|$"--verbosity:{verbosity}"; "NoSummary"|]
+let createProject verbose projectFilePath (projectFileText: string) : Project =
+    let verbosity = if verbose then "m" else "q"
+    let loggerArgs = [|$"-verbosity:{verbosity}"; "-tl:off"; "NoSummary"|]
     let consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger loggerArgs
     let loggers = [|consoleLogger|]
     let globalProperties =
