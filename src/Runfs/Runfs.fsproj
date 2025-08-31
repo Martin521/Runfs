@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -14,7 +14,7 @@
     <PackageTags>F#</PackageTags>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
-    <!-- <PackageReleaseNotes>https://github.com/Martin521/Runfs/RELEASE_NOTES.md</PackageReleaseNotes> -->
+    <PackageReleaseNotes>https://github.com/Martin521/Runfs/CHANGELOG.md</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
     </PackageIcon>
