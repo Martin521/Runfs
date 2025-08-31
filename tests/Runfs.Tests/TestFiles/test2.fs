@@ -8,4 +8,3 @@ let options = JsonFSharpOptions.Default().ToJsonSerializerOptions()
 
 let s = JsonSerializer.Serialize({| x = "Hello"; y = "world!" |}, options)
 printfn $"%s{s}" 
-

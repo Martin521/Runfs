@@ -39,8 +39,6 @@ let main argv =
                 | InvalidSourcePath s -> [$"Invalid source path: {s}"]
                 | InvalidSourceDirectory s -> [$"Invalid source directory: {s}"]
                 | BuildError(MSBuildError(target, result)) -> [$"MSBuild {target} error: {result}"]
-                | XBuildError(stdoutLines, stderrLines) -> 
-                    "Build error" :: indent stdoutLines @ indent stderrLines
                 | DirectiveError parseErrors ->
                     let getParseErrorString parseError =
                         let prefix n = $"  Line %3d{n}: "

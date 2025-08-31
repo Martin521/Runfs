@@ -16,7 +16,6 @@ type RunfsError =
     | InvalidSourceDirectory of string
     | DirectiveError of ParseError list
     | BuildError of MSBuildError
-    | XBuildError of string list * string list
 
 let ThisPackageName = "Runfs"
 let DependenciesHashFileName = "dependencies.hash"
@@ -64,7 +63,7 @@ let run (options, sourcePath, args) =
     initMSBuild()
 
     result {
-        let! fullSourcePath, fullSourceDir, artifactsDir, projectFilePath,
+        let! fullSourcePath, fullSourceDir, artifactsDir, virtualProjectFilePath,
             savedProjectFilePath, dependenciesHashPath, sourceHashPath, dllPath =
                 guardAndTime "creating paths" <| fun () -> result {
                     do! File.Exists sourcePath |> Result.requireTrue (InvalidSourcePath sourcePath)
@@ -108,7 +107,7 @@ let run (options, sourcePath, args) =
                 return computeDependenciesHash (string fullSourceDir) directives
         }
 
-        let! dependenciesChanged, sourceChanged, noDll = guardAndTime "computing build level" <| fun () ->
+        let! dependenciesChanged, sourceChanged, noExecutable = guardAndTime "computing build level" <| fun () ->
             let dependenciesChanged =
                 if noDependencyCheck then
                     false
@@ -121,33 +120,26 @@ let run (options, sourcePath, args) =
             let noDll = not (File.Exists dllPath)
             Ok (dependenciesChanged, sourceChanged, noDll)
         
-        if dependenciesChanged || sourceChanged || noDll then
-            use! project = guardAndTime "creating and writing project file" <| fun () ->
+        if dependenciesChanged || noExecutable then
+            do! guardAndTime "creating and writing project file" <| fun () ->
                 let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
-                File.WriteAllLines(savedProjectFilePath, projectFileLines)
-                let projectFileText = File.ReadAllText savedProjectFilePath
-                createProject verbose projectFilePath projectFileText |> Ok
+                File.WriteAllLines(savedProjectFilePath, projectFileLines) |> Ok
         
-            if dependenciesChanged || noDll then
-                File.Delete dependenciesHashPath
+        if dependenciesChanged || sourceChanged || noExecutable then
+            use! project = guardAndTime "creating msbuild project instance" <| fun () ->
+                let projectFileText = File.ReadAllText savedProjectFilePath
+                createProject verbose virtualProjectFilePath projectFileText |> Ok
+        
+            if dependenciesChanged || noExecutable then
                 do! guardAndTime "running msbuild restore" <| fun () -> result {
+                    File.Delete dependenciesHashPath
                     do! build "restore" project |> Result.mapError BuildError
                 }
 
-            do! guardAndTime "running dotnet build" <| fun () ->
-                if File.Exists projectFilePath then File.Delete projectFilePath
-                File.Copy(savedProjectFilePath, projectFilePath)
-                let args = [
-                    "build"
-                    "--no-restore"
-                    "-consoleLoggerParameters:NoSummary"
-                    if not verbose then "-v:q"
-                    projectFilePath
-                ]
-                let exitCode, stdoutLines, stderrLines =
-                    runCommandCollectOutput "dotnet" args fullSourceDir
-                File.Delete projectFilePath
-                if exitCode <> 0 then Error(XBuildError(stdoutLines, stderrLines)) else Ok()
+            do! guardAndTime "running dotnet build" <| fun () -> result {
+                File.Delete sourceHash
+                do! build "build" project |> Result.mapError BuildError
+            }
 
             if dependenciesChanged then
                 do! guardAndTime "saving dependencies hash" <| fun () ->

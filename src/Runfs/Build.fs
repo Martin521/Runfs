@@ -15,7 +15,9 @@ open Runfs.ProjectFile
 type Project =
     {buildManager: BuildManager; projectInstance: ProjectInstance}
     interface IDisposable with
-        member this.Dispose() = this.buildManager.EndBuild()
+        member this.Dispose() =
+            this.buildManager.EndBuild()
+            this.projectInstance.FullPath |> File.Delete
 
 type MSBuildError = MSBuildError of target: string * result: string
 
@@ -36,16 +38,16 @@ let createProject verbose projectFilePath (projectFileText: string) : Project =
     let options = ProjectOptions()
     options.ProjectCollection <- projectCollection
     options.GlobalProperties <- globalProperties
-    // let createProjectRootElement() =
-    //     let reader = new StringReader(projectFileText)
-    //     let xmlReader = XmlReader.Create reader
-    //     let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
-    //     projectRoot.FullPath <- projectFilePath
-    //     projectRoot
-    // let projectRoot = createProjectRootElement();
+
+    // let reader = new StringReader(projectFileText)
+    // let xmlReader = XmlReader.Create reader
+    // let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
+    // projectRoot.FullPath <- projectFilePath
     // let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
+
     File.WriteAllText(projectFilePath, projectFileText)
     let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
+
     let parameters = BuildParameters projectCollection
     parameters.Loggers <- loggers
     parameters.LogTaskInputs <- false
@@ -54,7 +56,6 @@ let createProject verbose projectFilePath (projectFileText: string) : Project =
     {buildManager = buildManager; projectInstance = projectInstance}
 
 let build target project =
-    let buildManager = BuildManager.DefaultBuildManager
     let flags =
         BuildRequestDataFlags.ClearCachesAfterBuild
         ||| BuildRequestDataFlags.SkipNonexistentTargets
@@ -63,7 +64,7 @@ let build target project =
     let buildRequest =
         new BuildRequestData(project.projectInstance, [|target|], null, flags)
 
-    let buildResult = buildManager.BuildRequest buildRequest
+    let buildResult = project.buildManager.BuildRequest buildRequest
     if buildResult.OverallResult = BuildResultCode.Success then
         Ok()
     else

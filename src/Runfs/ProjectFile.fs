@@ -45,6 +45,7 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
         "        <UseArtifactsOutput>true</UseArtifactsOutput>"
         "        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>"
         $"""        <ArtifactsPath>{escape artifactsPath}</ArtifactsPath>"""
+        $"""        <FileBasedProgram>true</FileBasedProgram>"""
         "    </PropertyGroup>"
         yield! sdks |> List.map (sdkLine "Sdk.props")
         "    <PropertyGroup>"
