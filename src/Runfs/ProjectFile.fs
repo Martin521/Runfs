@@ -16,8 +16,8 @@ let private escape str = SecurityElement.Escape str |> string
 
 let private sdkLine project (name, version) =
     match version with
-    | Some v -> $"""    <Import Project="{project}" Sdk="{escape name}" Version="{escape v}" />"""
-    | None -> $"""    <Import Project="{project}" Sdk="{escape name}" />"""
+    | Some v -> $"""    <Import Project="{escape project}" Sdk="{escape name}" Version="{escape v}" />"""
+    | None -> $"""    <Import Project="{escape project}" Sdk="{escape name}" />"""
 
 let private propertyLine (name, version) =
     $"""        <{name}>{escape version}</{name}>"""
@@ -30,7 +30,7 @@ let private packageLine (name, version) =
 let createProjectFileLines directives entryPointSourceFullPath artifactsPath assemblyName =
     let sdks =
         match directives |> List.choose (function Sdk(n, v) -> Some(n, v) | _ -> None) with
-        | [] -> ["Microsoft.NET.Sdk", None]
+        | [] -> ["Microsoft.NET.Sdk", None]  //DODO verison?
         | d -> d
     let properties =
         directives |> List.choose (function Property(n, v) -> Some(n.ToLowerInvariant(), v) | _ -> None) |> Map
@@ -41,10 +41,11 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
     [
         "<Project>"
         "    <PropertyGroup>"
-        $"""        <AssemblyName>{assemblyName}</AssemblyName>"""
+        $"""        <AssemblyName>{escape assemblyName}</AssemblyName>"""
         "        <UseArtifactsOutput>true</UseArtifactsOutput>"
         "        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>"
         $"""        <ArtifactsPath>{escape artifactsPath}</ArtifactsPath>"""
+        $"""        <FileBasedProgram>true</FileBasedProgram>"""
         "    </PropertyGroup>"
         yield! sdks |> List.map (sdkLine "Sdk.props")
         "    <PropertyGroup>"

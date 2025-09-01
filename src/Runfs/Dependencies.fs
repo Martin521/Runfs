@@ -8,7 +8,7 @@ open Runfs.Directives
 open Runfs.Utilities
 
 let RuntimeVersion = Environment.Version
-let SdkVersion = Runtime.InteropServices.RuntimeInformation.FrameworkDescription
+let SdkVersion = "t.b.d" // TODO (needed?)
 let TargetFramework = $"net{RuntimeVersion.Major}.{RuntimeVersion.Minor}"
 
 let PotentialImplicitBuildFileNames = [

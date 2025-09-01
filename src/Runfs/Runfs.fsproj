@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -14,7 +14,7 @@
     <PackageTags>F#</PackageTags>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
-    <!-- <PackageReleaseNotes>https://github.com/Martin521/Runfs/RELEASE_NOTES.md</PackageReleaseNotes> -->
+    <PackageReleaseNotes>https://github.com/Martin521/Runfs/CHANGELOG.md</PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
     </PackageIcon>
@@ -29,13 +29,18 @@
     <Compile Include="Directives.fs" />
     <Compile Include="Dependencies.fs" />
     <Compile Include="ProjectFile.fs" />
-    
+    <Compile Include="Build.fs" />
     <Compile Include="Runfs.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
     <PackageReference Include="FsToolkit.ErrorHandling" Version="5.0.1" />
-    <!-- <PackageReference Include="Microsoft.Build" Version="17.14.8" /> -->
+    <PackageReference Include="Microsoft.Build" Version="17.14.8" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
+    <!-- <PackageReference Include="Microsoft.Build" Version="17.15.0-preview-25277-114" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="17.15.0-preview-25277-114" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.15.0-preview-25277-114" />
+    <PackageReference Include="Microsoft.Build.Runtime" Version="17.15.0-preview-25277-114" /> -->
   </ItemGroup>
 </Project>
