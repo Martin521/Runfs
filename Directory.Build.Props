@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
-    <UseArtifactsOutput>true</UseArtifactsOutput>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-</Project>
