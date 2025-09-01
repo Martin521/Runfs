@@ -6,7 +6,6 @@ open Microsoft.Build.Evaluation
 open Microsoft.Build.Execution
 open Microsoft.Build.Framework
 open Microsoft.Build.Logging
-open Microsoft.Build.Locator
 open System
 open System.IO
 open System.Xml
@@ -21,7 +20,7 @@ type Project =
 
 type MSBuildError = MSBuildError of target: string * result: string
 
-let initMSBuild() = MSBuildLocator.RegisterDefaults() |> ignore
+let initMSBuild() = Microsoft.Build.Locator.MSBuildLocator.RegisterDefaults() |> ignore
 
 let createProject verbose projectFilePath (projectFileText: string) : Project =
     let verbosity = if verbose then "m" else "q"
@@ -46,14 +45,17 @@ let createProject verbose projectFilePath (projectFileText: string) : Project =
     // let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
 
     File.WriteAllText(projectFilePath, projectFileText)
-    let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
-
-    let parameters = BuildParameters projectCollection
-    parameters.Loggers <- loggers
-    parameters.LogTaskInputs <- false
-    let buildManager = BuildManager.DefaultBuildManager
-    buildManager.BeginBuild parameters
-    {buildManager = buildManager; projectInstance = projectInstance}
+    try
+        let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
+        let parameters = BuildParameters projectCollection
+        parameters.Loggers <- loggers
+        parameters.LogTaskInputs <- false
+        let buildManager = BuildManager.DefaultBuildManager
+        buildManager.BeginBuild parameters
+        {buildManager = buildManager; projectInstance = projectInstance}
+    with ex ->
+        File.Delete projectFilePath
+        reraise()
 
 let build target project =
     let flags =
