@@ -4,10 +4,10 @@
 
 ### changed
 
-* direct calls to msbuild, but still no virtual (in-memory) project file
+* Direct calls to msbuild, making runfs faster. But still no virtual (in-memory) project file due to sdk dll hell.
 
 ## 1.0.2
 
 ### added
 
-* initial version
+* Initial version
