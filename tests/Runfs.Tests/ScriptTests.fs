@@ -9,11 +9,17 @@ let thisFileDirectory = __SOURCE_DIRECTORY__
 let testFile1 = Path.Join(thisFileDirectory, "TestFiles/test1.fs")
 let testFile2 = Path.Join(thisFileDirectory, "TestFiles/test2.fs")
 
-let runfsDll = Path.Join(thisFileDirectory, "../../artifacts/bin/runfs/debug/Runfs.dll")
+let configPath =
+    #if DEBUG
+        "debug"
+    #else
+        "release"
+    #endif
+let runfsDll = Path.Join(thisFileDirectory, $"../../artifacts/bin/runfs/{configPath}/Runfs.dll")
 
 [<Fact>]
 let ``found runfs executable`` () =
-    Assert.True(File.Exists runfsDll)
+    Assert.True(File.Exists runfsDll, $"not found: {runfsDll}")
 
 [<Fact>]
 let ``testFile1 runs correctly`` () =
