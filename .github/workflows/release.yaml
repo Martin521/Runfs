@@ -28,13 +28,9 @@ jobs:
     - name: Pack
       run: dotnet pack
  
-    - name: Dump GitHub context
+    - name: Version (from tag)
       env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-      run: echo "$GITHUB_CONTEXT"
-    - name: Dump job context
-      env:
-        JOB_CONTEXT: ${{ toJson(job) }}
-      run: echo "$JOB_CONTEXT"
+        VERSION: ${{ github.ref_name }}
+      run: echo "$VERSION"
     # - name: Publish to GPR
     #   run: dotnet nuget push "./artifacts/package/release/*.nupkg" -k ${{ secrets.YOUR_NUGET_KEY }}
