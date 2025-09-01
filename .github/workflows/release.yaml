@@ -25,8 +25,8 @@ jobs:
     - name: L1
       run: bash -c "ls ."
 
-    - name: L1
-      run: bash -c "ls ./src"
+    - name: L2
+      run: bash -c "ls ./src/Runfs"
 
     # - name: L3
     #   run: bash -c "ls ./artifacts"
