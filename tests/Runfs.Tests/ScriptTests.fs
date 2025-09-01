@@ -15,7 +15,7 @@ let configPath =
     #else
         "release"
     #endif
-let runfsDll = Path.Join(thisFileDirectory, $"../../artifacts/bin/runfs/{configPath}/Runfs.dll")
+let runfsDll = Path.Join(thisFileDirectory, $"../../artifacts/bin/Runfs/{configPath}/Runfs.dll")
 
 [<Fact>]
 let ``found runfs executable`` () =
