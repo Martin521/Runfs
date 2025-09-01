@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.4
+
+### changed
+
+* Avoid artifact left-over in certain error situations
+
 ## 1.0.3 
 
 ### changed
