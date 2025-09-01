@@ -1,5 +1,5 @@
 #r_package "FSharp.SystemTextJson@1.4.36"
-#r_sdk "Microsoft.Net.Sdk"
+//#r_sdk "Microsoft.Net.Sdk"
 
 open System.Text.Json
 open System.Text.Json.Serialization
