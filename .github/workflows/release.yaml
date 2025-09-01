@@ -23,19 +23,16 @@ jobs:
       run: dotnet build -c Release --no-restore
 
     - name: L1
-      run: bash -c "ls ../.."
-
-    - name: L2
-      run: bash -c "ls ../.."
+      run: bash -c "ls ."
 
     - name: L3
-      run: bash -c "ls ../../artifacts"
+      run: bash -c "ls ./artifacts"
 
     - name: L4
-      run: bash -c "ls ../../artifacts/bin"
+      run: bash -c "ls ./artifacts/bin"
 
     - name: L5
-      run: bash -c "ls ../../artifacts/bin"
+      run: bash -c "ls ./artifacts/bin"
 
     - name: Test
       run: dotnet test -c Release --no-build
