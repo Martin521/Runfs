@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -19,7 +19,7 @@
     <PackageIcon>
     </PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <!-- <PackageReadmeFile>README.md</PackageReadmeFile> -->
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="../../README.md" Pack="true" PackagePath="" />

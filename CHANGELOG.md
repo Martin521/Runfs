@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.5
+
+### changed
+
+* "Virtual" (in-memory) project file
+
 ## 1.0.4
 
 ### changed

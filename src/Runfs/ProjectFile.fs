@@ -59,5 +59,31 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
         $"""        <Compile Include="{escape entryPointSourceFullPath}" />"""
         "    </ItemGroup>"
         yield! sdks |> List.map (sdkLine "Sdk.targets")
+
+        $""" <!-- Override targets which don't work with project files that are not present on disk. --> """
+        $""" <!-- Hopefully we can remove this once net10 has landed. --> """
+
+        $""" <Target Name="_FilterRestoreGraphProjectInputItems" """
+        $"""         DependsOnTargets="_LoadRestoreGraphEntryPoints" """
+        $"""         Returns="@(FilteredRestoreGraphProjectInputItems)"> """
+        $"""     <ItemGroup> """
+        $"""         <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" /> """
+        $"""     </ItemGroup> """
+        $""" </Target> """
+
+        $""" <Target Name="_GetAllRestoreProjectPathItems" """
+        $"""         DependsOnTargets="_FilterRestoreGraphProjectInputItems" """
+        $"""         Returns="@(_RestoreProjectPathItems)"> """
+        $"""     <ItemGroup> """
+        $"""         <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" /> """
+        $"""     </ItemGroup> """
+        $""" </Target> """
+
+        $""" <Target Name="_GenerateRestoreGraph" """
+        $"""         DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph" """
+        $"""         Returns="@(_RestoreGraphEntry)"> """
+        $"""     <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph --> """
+        $""" </Target> """
+
         "</Project>"
     ]
