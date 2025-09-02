@@ -107,7 +107,7 @@ let run (options, sourcePath, args) =
                 return computeDependenciesHash (string fullSourceDir) directives
         }
 
-        let! dependenciesChanged, sourceChanged, noExecutable = guardAndTime "computing build level" <| fun () ->
+        let! needsRestore, needsBuild = guardAndTime "computing build level" <| fun () ->
             let dependenciesChanged =
                 if noDependencyCheck then
                     false
@@ -118,34 +118,34 @@ let run (options, sourcePath, args) =
                 let readPreviousSourceHash() = File.ReadAllText sourceHashPath
                 not (File.Exists sourceHashPath && readPreviousSourceHash() = sourceHash)
             let noDll = not (File.Exists dllPath)
-            Ok (dependenciesChanged, sourceChanged, noDll)
+            Ok (dependenciesChanged || noDll, sourceChanged)
         
-        if dependenciesChanged || noExecutable then
+        if needsRestore then
             do! guardAndTime "creating and writing project file" <| fun () ->
                 let projectFileLines = createProjectFileLines directives fullSourcePath artifactsDir AssemblyName
                 File.WriteAllLines(savedProjectFilePath, projectFileLines) |> Ok
         
-        if dependenciesChanged || sourceChanged || noExecutable then
+        if needsRestore || needsBuild then
             use! project = guardAndTime "creating msbuild project instance" <| fun () ->
                 let projectFileText = File.ReadAllText savedProjectFilePath
                 createProject verbose virtualProjectFilePath projectFileText |> Ok
         
-            if dependenciesChanged || noExecutable then
+            if needsRestore then
                 do! guardAndTime "running msbuild restore" <| fun () -> result {
                     File.Delete dependenciesHashPath
                     do! build "restore" project |> Result.mapError BuildError
                 }
-
+            
             do! guardAndTime "running dotnet build" <| fun () -> result {
                 File.Delete sourceHash
                 do! build "build" project |> Result.mapError BuildError
             }
 
-            if dependenciesChanged then
+            if needsRestore then
                 do! guardAndTime "saving dependencies hash" <| fun () ->
                     File.WriteAllText(dependenciesHashPath, dependenciesHash) |> Ok
 
-            if sourceChanged then
+            if needsBuild then
                 do! guardAndTime "saving source hash" <| fun () ->
                     File.WriteAllText(sourceHashPath, sourceHash) |> Ok
 

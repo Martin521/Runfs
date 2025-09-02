@@ -58,15 +58,11 @@ Main learnings
 - A small compiler change is needed to allow for the directive format.
 - The most important missing piece is editor support.
 
-Open items
-- I did not succeed yet in replicating the "virtual project file" approach. If I use the msbuild API's `BuildManager`, it doesn't find the sdk, probably because I am missing the right global build properties that `dotnet run` has available internally. I am not sure if there is a workaround. For now, I settled for a less nice file-based approach. Less nice because the script location must be writable.
-- Not sure yet if the "compile only" shortcut can easily be replicated for F#.
-
 ## TODOs
 
 Runfs
-- investigate the open items: virtual project file, optimize the build step (cache core compile input beyond restore)
-- add more tests, automate publishing, possibly Rid-package, fix case sensitivity issue in Directives.fs
+- investigate if the "compile only" shortcut can be replicated for F#
+- add more tests, possibly Rid-package, fix case sensitivity issue in Directives.fs
 - implement the #project, #source and #dll directives and `--convert`
 
 Elsewhere

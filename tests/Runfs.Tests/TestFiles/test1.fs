@@ -13,5 +13,3 @@ printfn $"args: {args}"
 
 // let RuntimeVersion = Environment.Version
 // printfn $"Runtime version: {RuntimeVersion}"
-
-

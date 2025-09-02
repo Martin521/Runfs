@@ -27,9 +27,7 @@ let createProject verbose projectFilePath (projectFileText: string) : Project =
     let loggerArgs = [|$"-verbosity:{verbosity}"; "-tl:off"; "NoSummary"|]
     let consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger loggerArgs
     let loggers = [|consoleLogger|]
-    let globalProperties =
-        dict [
-        ]
+    let globalProperties = dict []
     let projectCollection = new ProjectCollection(
         globalProperties,
         loggers,
@@ -38,24 +36,17 @@ let createProject verbose projectFilePath (projectFileText: string) : Project =
     options.ProjectCollection <- projectCollection
     options.GlobalProperties <- globalProperties
 
-    // let reader = new StringReader(projectFileText)
-    // let xmlReader = XmlReader.Create reader
-    // let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
-    // projectRoot.FullPath <- projectFilePath
-    // let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
-
-    File.WriteAllText(projectFilePath, projectFileText)
-    try
-        let projectInstance = ProjectInstance.FromFile(projectFilePath, options)
-        let parameters = BuildParameters projectCollection
-        parameters.Loggers <- loggers
-        parameters.LogTaskInputs <- false
-        let buildManager = BuildManager.DefaultBuildManager
-        buildManager.BeginBuild parameters
-        {buildManager = buildManager; projectInstance = projectInstance}
-    with ex ->
-        File.Delete projectFilePath
-        reraise()
+    let reader = new StringReader(projectFileText)
+    let xmlReader = XmlReader.Create reader
+    let projectRoot = ProjectRootElement.Create(xmlReader, projectCollection)
+    projectRoot.FullPath <- projectFilePath
+    let projectInstance = ProjectInstance.FromProjectRootElement(projectRoot, options)
+    let parameters = BuildParameters projectCollection
+    parameters.Loggers <- loggers
+    parameters.LogTaskInputs <- false
+    let buildManager = BuildManager.DefaultBuildManager
+    buildManager.BeginBuild parameters
+    {buildManager = buildManager; projectInstance = projectInstance}
 
 let build target project =
     let flags =
