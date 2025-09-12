@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.5</Version>
+    <Version>1.0.6</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -14,7 +14,13 @@
     <PackageTags>F#</PackageTags>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
-    <PackageReleaseNotes>https://github.com/Martin521/Runfs/blob/main/CHANGELOG.md</PackageReleaseNotes>
+    <PackageReleaseNotes>
+## 1.0.6
+
+### added
+
+* support for "source", "project" and "dll" reference directives
+    </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
     </PackageIcon>
@@ -39,7 +45,5 @@
 
     <PackageReference Include="Microsoft.Build" Version="17.14.8" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
-
-    <!-- <PackageReference Include="Microsoft.Build" Version="17.15.0-preview-25277-114" /> -->
   </ItemGroup>
 </Project>
