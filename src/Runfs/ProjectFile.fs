@@ -27,6 +27,15 @@ let private packageLine (name, version) =
     | None -> $"""        <PackageReference Include="{escape name}" />"""
     | Some v -> $"""        <PackageReference Include="{escape name}" Version="{escape v}"/>"""
 
+let private sourceLine name =
+    $"""        <Compile Include="{escape name}" />"""
+
+let private dllLine name =
+    $"""        <Reference Include="{escape name}" />"""
+
+let private projectLine name =
+    $"""        <ProjectReference Include="{escape name}" />"""
+
 let createProjectFileLines directives entryPointSourceFullPath artifactsPath assemblyName =
     let sdks =
         match directives |> List.choose (function Sdk(n, v) -> Some(n, v) | _ -> None) with
@@ -37,6 +46,9 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
     let remainingDefaultProperties =
         DefaultProperties |> List.filter (fun (k, _) -> not (Map.containsKey (k.ToLowerInvariant()) properties))
     let packages = directives |> List.choose (function Package(n, v) -> Some(n, v) | _ -> None)
+    let dlls = directives |> List.choose (function Dll n -> Some n | _ -> None)
+    let sources = directives |> List.choose (function Source n -> Some n | _ -> None)
+    let projects = directives |> List.choose (function Project n -> Some n | _ -> None)
 
     [
         "<Project>"
@@ -56,6 +68,13 @@ let createProjectFileLines directives entryPointSourceFullPath artifactsPath ass
         yield! packages |> List.map packageLine
         "    </ItemGroup>"
         "    <ItemGroup>"
+        yield! dlls |> List.map dllLine
+        "    </ItemGroup>"
+        "    <ItemGroup>"
+        yield! projects |> List.map projectLine
+        "    </ItemGroup>"
+        "    <ItemGroup>"
+        yield! sources |> List.map sourceLine
         $"""        <Compile Include="{escape entryPointSourceFullPath}" />"""
         "    </ItemGroup>"
         yield! sdks |> List.map (sdkLine "Sdk.targets")

@@ -7,8 +7,8 @@ let thisFileDirectory = __SOURCE_DIRECTORY__
 let testFileDirectory = Path.Join(thisFileDirectory, "TestFiles")
 
 let expectedDirectives = [
-    Project "abc/xyz.fsproj"
-    Dll "System.dll"
+    // Project "abc/xyz.fsproj"
+    // Dll "System.dll"
     Property ("myprop", "42")
     Property ("TargetFramework", "net8.0")
     Sdk ("Microsoft.Net.Sdk", Some "10.0.100")

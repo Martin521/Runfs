@@ -3,6 +3,10 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+TODO.md
+meeting.md
+dotnet-tools.json
+
 # dotenv files
 .env
 

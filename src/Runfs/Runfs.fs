@@ -118,7 +118,8 @@ let run (options, sourcePath, args) =
                 let readPreviousSourceHash() = File.ReadAllText sourceHashPath
                 not (File.Exists sourceHashPath && readPreviousSourceHash() = sourceHash)
             let noDll = not (File.Exists dllPath)
-            Ok (dependenciesChanged || noDll, sourceChanged)
+            let hasProjectDirective = directives |> List.exists (function Project _ -> true | _ -> false)
+            Ok (dependenciesChanged || noDll || hasProjectDirective, sourceChanged)
         
         if needsRestore then
             do! guardAndTime "creating and writing project file" <| fun () ->
