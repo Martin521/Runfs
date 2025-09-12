@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.0.6
+
+### added
+
+* support for "source", "project" and "dll" reference directives
+
 ## 1.0.5
 
 ### changed
