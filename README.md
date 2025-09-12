@@ -22,9 +22,9 @@ The following directives (source lines) are recognized by runfs:
 - `#r_package "pp@1.0.0"` - references package pp, version 1.0.0
 - `#r_sdk "mysdk@0.0.1"` - references an sdk
 - `#r_property "myprop=42"` - sets a build property
-- `#r_project "xyz.fsproj"` - references a project [not yet implemented]
-- `#r_dll "mylib.dll"` - references a library [not yet implemented]
-- `#r_source "utilities.fs"` - references a source file [not yet implemented]
+- `#r_project "xyz.fsproj"` - references a project
+- `#r_dll "mylib.dll"` - references a library
+- `#r_source "utilities.fs"` - references a source file
 
 > The above directive syntax is preliminary and made to work with the current F# compiler (the parser accepts and ignores them). Ideally, the syntax defined for "dotnet run app.cs" should be reused, like `#:package pp@1.0.0`, but this needs a compiler fix first.
 
@@ -63,7 +63,7 @@ Main learnings
 Runfs
 - investigate if the "compile only" shortcut can be replicated for F#
 - add more tests, possibly Rid-package, fix case sensitivity issue in Directives.fs
-- implement the #project, #source and #dll directives and `--convert`
+- implement `--convert`
 
 Elsewhere
 - propose and possibly implement a compiler change so that the 'dotnet run app.cs' syntax for directives can be used
