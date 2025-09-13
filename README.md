@@ -70,3 +70,13 @@ Elsewhere
 - Ionide/FSAC support
 - collect feedback for an eventual `dotnet run app.fs`
 
+## HOWTOs
+(just for my future self)
+
+Create a release
+- Create the feature / fix on a new branch
+- Update `Version` and `PackageReleaseNotes` in `Runfs.fsproj`
+- Create PR, wait for CI test, merge it
+- Switch to main, `git pull`
+- `git tag V.V.V && git push --tags`, where `V.V.V` is the version
+- This should create the package and push it to nuget
