@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 1.0.8
+
+### changed
+
+* msbuild version (security update)
+
+## 1.0.7
+
+### added
+
+* better virtual project name, for better error messages
+
 ## 1.0.6
 
 ### added

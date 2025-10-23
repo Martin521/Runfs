@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.7</Version>
+    <Version>1.0.8</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -15,17 +15,11 @@
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
     <PackageReleaseNotes>
-## 1.0.7
+## 1.0.8
 
-### added
+### changed
 
-* better virtual project name, for better error messages
-
-## 1.0.6
-
-### added
-
-* support for "source", "project" and "dll" reference directives
+* msbuild version (security update)
     </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
@@ -47,9 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
-    <PackageReference Include="FsToolkit.ErrorHandling" Version="5.0.1" />
+    <PackageReference Include="FsToolkit.ErrorHandling" Version="5.1.0" />
 
-    <PackageReference Include="Microsoft.Build" Version="17.14.8" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.9.1" />
+    <PackageReference Include="Microsoft.Build" Version="17.14.28" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.10.2" />
   </ItemGroup>
 </Project>

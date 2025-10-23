@@ -75,7 +75,7 @@ Elsewhere
 
 Create a release
 - Create the feature / fix on a new branch
-- Update `Version` and `PackageReleaseNotes` in `Runfs.fsproj`
+- Update `Version` and `PackageReleaseNotes` in `Runfs.fsproj`, and `CHANGELOG.md`
 - Create PR, wait for CI test, merge it
 - Switch to main, `git pull`
 - `git tag V.V.V && git push --tags`, where `V.V.V` is the version
