@@ -9,6 +9,14 @@ The source file can contain directives to reference libraries and to influence t
 
 > Important: runfs is not about F# scripts (.fsx files) that can be run by `dotnet fsi`. See [below](#how-does-runfs-relate-to-fsi).
 
+## Update February 2026
+
+[Here](https://amplifyingfsharp.io/sessions/2025-10-03/) is a recording of an Amplifying F# session on the topic.
+
+Because of a) concerns of parts of the F# community about having two similar tools (`dotnet fsi script.fsx` and `dotnet runfs app.fs`) and b) missing "market pull", I have currently no further plans for this project.
+
+The tool is still available as dotnet tool and can be useful especially for ad-hoc testing of library projects.
+
 ## Usage
 
 ```
