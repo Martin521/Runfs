@@ -2,24 +2,25 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.8</Version>
+    <Version>1.0.9</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
     <!-- Build settings -->
     <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <!-- NuGet settings -->
     <PackageId>runfs</PackageId>
     <PackageTags>F#</PackageTags>
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
     <PackageReleaseNotes>
-## 1.0.8
+## 1.0.9
 
 ### changed
 
-* msbuild version (security update)
+* changed global and target framework to net10
+* updated README
     </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
