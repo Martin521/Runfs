@@ -15,7 +15,7 @@ The source file can contain directives to reference libraries and to influence t
 
 Because of a) concerns of parts of the F# community about having two similar tools (`dotnet fsi script.fsx` and `dotnet runfs app.fs`) and b) missing "market pull", I have currently no further plans for this project.
 
-The tool is still available as dotnet tool and can be useful especially for ad-hoc testing of library projects.
+The tool is still available as dotnet tool and can be useful especially for [ad-hoc testing of library projects](docs/examples/testing/README.md).
 
 ## Usage
 
