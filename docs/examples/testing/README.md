@@ -2,7 +2,7 @@
 
 ## Explorative testing
 
-Just create an ad-hoc driver file (see example file `explore.fs`), add a project reference and start testing your library API by running `dotnet runfs explore.fs`.
+Just create an ad-hoc driver file (see example file `explore.fs` in this directory), add a project reference and start testing your library API by running `dotnet runfs explore.fs`.
 
 ## Unit test development / fixes
 
