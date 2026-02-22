@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 1.0.10
+
+### added
+
+* documentation examples
+
+### changed
+
+* moved to xunit.v3
+
 ## 1.0.9
 
 * changed global and target framework to net10
