@@ -2,7 +2,7 @@
   <PropertyGroup>
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
-    <Version>1.0.10</Version>
+    <Version>1.0.11</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -15,11 +15,6 @@
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>runfs</ToolCommandName>
     <PackageReleaseNotes>
-## 1.0.10
-
-### added
-
-* documentation examples
 ## 1.0.10
 
 ### added
