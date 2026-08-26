@@ -3,7 +3,6 @@
     <!-- General -->
     <AssemblyName>Runfs</AssemblyName>
     <Version>1.0.10</Version>
-    <Version>1.0.10</Version>
     <Description>"dotnet run app.cs" functionality for F#.</Description>
     <Copyright>Copyright 2025 by Martin521</Copyright>
     <Authors>Martin521 and contributors</Authors>
@@ -31,6 +30,7 @@
 
 * moved to xunit.v3
 * moved nuget push to "Trusted Publishing"
+* updated actions and global.json
     </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>
