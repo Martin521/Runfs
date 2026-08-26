@@ -20,10 +20,17 @@
 ### added
 
 * documentation examples
+## 1.0.10
+
+### added
+
+* documentation examples
 
 ### changed
 
 * moved to xunit.v3
+* moved nuget push to "Trusted Publishing"
+* updated actions and global.json
     </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>

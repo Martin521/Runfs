@@ -64,7 +64,8 @@ I started by looking into extending the sdk code to accomodate F# input. This wo
 Main learnings
 - This has to be about running .fs files, not scripts.
 - A small compiler change is needed to allow for the directive format.
-- The most important missing piece is editor support.
+- Runfs depends on the SDK version. Therefore, it can only be a demonstrator for a real `dotnet run app.fs`
+- The other important missing piece is editor support.
 
 ## TODOs
 

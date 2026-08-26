@@ -12,9 +12,12 @@ jobs:
   publish:
     runs-on: ubuntu-latest
 
+    permissions:
+      id-token: write
+
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-dotnet@v4
+    - uses: actions/checkout@v7
+    - uses: actions/setup-dotnet@v6
     
     - name: Restore dependencies
       run: dotnet restore
@@ -27,10 +30,16 @@ jobs:
     
     - name: Pack
       run: dotnet pack
+
+    - name: Nuget login
+      uses: Nuget/login@v1
+      id: login
+      with:
+        user: Martin521
  
     - name: Push to nuget.org
       env:
         VERSION: ${{ github.ref_name }}
       run: dotnet nuget push "./artifacts/package/release/runfs.${VERSION}.nupkg"
         --source https://api.nuget.org/v3/index.json
-        --api-key ${{ secrets.NUGET_KEY }}
+        --api-key ${{steps.login.outputs.NUGET_API_KEY}}
