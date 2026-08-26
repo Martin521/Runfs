@@ -24,6 +24,7 @@
 ### changed
 
 * moved to xunit.v3
+* moved nuget push to "Trusted Publishing"
     </PackageReleaseNotes>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageIcon>

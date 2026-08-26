@@ -9,6 +9,7 @@
 ### changed
 
 * moved to xunit.v3
+* moved nuget push to "Trusted Publishing"
 
 ## 1.0.9
 
